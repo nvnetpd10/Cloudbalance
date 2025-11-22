@@ -13,10 +13,13 @@ import { BsGraphUpArrow } from "react-icons/bs";
 import { MdDashboard } from "react-icons/md";
 import { LuLayoutDashboard } from "react-icons/lu";
 
-const drawerWidth = 380;
+const collapsedWidth = 70;
+const expandedWidth = 340;
 
 export default function Sidebar({ open }) {
   const location = useLocation();
+
+  const currentWidth = open ? expandedWidth : collapsedWidth;
 
   const menuItems = [
     {
@@ -41,7 +44,6 @@ export default function Sidebar({ open }) {
     },
   ];
 
-  // Make "User Management" active when URL = /dashboard
   const isActive = (path) =>
     location.pathname === path ||
     (path === "/dashboard/users" && location.pathname === "/dashboard");
@@ -49,23 +51,31 @@ export default function Sidebar({ open }) {
   return (
     <Drawer
       variant="persistent"
-      open={open}
+      open={true}
       sx={{
-        width: drawerWidth,
+        width: currentWidth,
         flexShrink: 0,
+        transition: (theme) =>
+          theme.transitions.create("width", {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.enteringScreen,
+          }),
         "& .MuiDrawer-paper": {
-          width: drawerWidth,
+          width: currentWidth,
           boxSizing: "border-box",
           borderRight: "1px solid #ddd",
           paddingTop: "30px",
+          transition: (theme) =>
+            theme.transitions.create("width", {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.enteringScreen,
+            }),
         },
       }}
     >
       <Toolbar />
 
       <List sx={{ mt: 1 }}>
-        {" "}
-        {/* optional extra spacing */}
         {menuItems.map((item) => {
           const active = isActive(item.path);
 
@@ -75,25 +85,37 @@ export default function Sidebar({ open }) {
               component={Link}
               to={item.path}
               sx={{
-                py: 2.2,
+                paddingY: "18px",
                 bgcolor: active ? "#e0f0ff" : "transparent",
                 borderLeft: active
                   ? "4px solid #1976d2"
                   : "4px solid transparent",
                 "&:hover": { bgcolor: "#e0f0ff" },
+                justifyContent: open ? "initial" : "center",
               }}
             >
-              <ListItemIcon sx={{ color: active ? "#1976d2" : "inherit" }}>
+              <ListItemIcon
+                sx={{
+                  color: active ? "#1976d2" : "inherit",
+                  minWidth: open ? 35 : 0,
+                  mr: open ? 1.5 : "auto",
+                  justifyContent: "center",
+                  // 🚀 FIX: Add margin-bottom (mb) when sidebar is closed (open === false)
+                  mb: open ? 0 : 1.5,
+                }}
+              >
                 {item.icon}
               </ListItemIcon>
 
-              <ListItemText
-                primary={item.label}
-                primaryTypographyProps={{
-                  fontWeight: active ? "bold" : "normal",
-                  color: active ? "#1976d2" : "inherit",
-                }}
-              />
+              {open && (
+                <ListItemText
+                  primary={item.label}
+                  primaryTypographyProps={{
+                    fontWeight: active ? "bold" : "normal",
+                    color: active ? "#1976d2" : "inherit",
+                  }}
+                />
+              )}
             </ListItemButton>
           );
         })}
