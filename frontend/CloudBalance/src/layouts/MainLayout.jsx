@@ -21,7 +21,7 @@ export default function Layout() {
             padding: 3,
             overflowY: "auto",
             flexGrow: 1,
-            backgroundColor: "#f5f7fa", // ⭐ ADDED BACKGROUND COLOR
+            backgroundColor: "#f5f7fa",
           }}
         >
           <Outlet context={{ open }} />

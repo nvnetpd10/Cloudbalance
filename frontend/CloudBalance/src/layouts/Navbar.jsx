@@ -33,9 +33,6 @@ export default function Navbar({ toggleSidebar }) {
           justifyContent: "space-between",
         }}
       >
-        {/* ---------------------------------------------------
-           BOX 1 → LOGO
-        --------------------------------------------------- */}
         <Box sx={{ display: "flex", alignItems: "center" }}>
           <Box
             component="img"
@@ -45,9 +42,6 @@ export default function Navbar({ toggleSidebar }) {
           />
         </Box>
 
-        {/* ---------------------------------------------------
-           BOX 2 → TOGGLE ICON  (CENTER)
-        --------------------------------------------------- */}
         <Box
           sx={{
             display: "flex",
@@ -69,11 +63,7 @@ export default function Navbar({ toggleSidebar }) {
           </IconButton>
         </Box>
 
-        {/* ---------------------------------------------------
-           BOX 3 → USER INFO + LOGOUT
-        --------------------------------------------------- */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 5 }}>
-          {/* User welcome text */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <FaRegUserCircle size={24} color="#1976d2" />
             <Box>
@@ -89,7 +79,6 @@ export default function Navbar({ toggleSidebar }) {
             </Box>
           </Box>
 
-          {/* Logout button */}
           <Button
             variant="outlined"
             sx={{

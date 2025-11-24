@@ -8,7 +8,6 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 
-// ---- STYLING ----
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: "#fff",
@@ -34,21 +33,21 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 export default function DataTable({ columns = [], rows = [] }) {
   const [sortConfig, setSortConfig] = useState({
     key: null,
-    direction: "asc",
+    direction: null,
   });
 
-  const handleSort = (col, index) => {
-    // Only allow sorting for first 5 columns
-    if (index > 4) return;
+  const handleSort = (col) => {
+    if (!col.sortable) return;
 
     let direction = "asc";
+
     if (sortConfig.key === col.field && sortConfig.direction === "asc") {
       direction = "desc";
     } else if (
       sortConfig.key === col.field &&
       sortConfig.direction === "desc"
     ) {
-      direction = null; // remove sorting
+      direction = null;
     }
 
     setSortConfig({ key: col.field, direction });
@@ -68,19 +67,14 @@ export default function DataTable({ columns = [], rows = [] }) {
   }
 
   const getSortIcon = (col) => {
+    if (!col.sortable) return null;
+
     const style = { fontSize: 12, marginLeft: 4, opacity: 0.8 };
 
-    if (sortConfig.key !== col.field) {
-      return <span style={style}>⇅</span>;
-    }
+    if (sortConfig.key !== col.field) return <span style={style}>⇅</span>;
 
-    if (sortConfig.direction === "asc") {
-      return <span style={style}>⇑</span>;
-    }
-
-    if (sortConfig.direction === "desc") {
-      return <span style={style}>⇓</span>;
-    }
+    if (sortConfig.direction === "asc") return <span style={style}>⇑</span>;
+    if (sortConfig.direction === "desc") return <span style={style}>⇓</span>;
 
     return <span style={style}>⇅</span>;
   };
@@ -90,15 +84,13 @@ export default function DataTable({ columns = [], rows = [] }) {
       <Table sx={{ minWidth: 700 }}>
         <TableHead>
           <TableRow>
-            {columns.map((col, index) => (
+            {columns.map((col) => (
               <StyledTableCell
                 key={col.key}
-                onClick={() => handleSort(col, index)}
+                onClick={() => handleSort(col)}
+                style={{ cursor: col.sortable ? "pointer" : "default" }}
               >
-                {col.name}{" "}
-                {index < 5 && (
-                  <span style={{ fontSize: 12 }}>{getSortIcon(col)}</span>
-                )}
+                {col.name} {getSortIcon(col)}
               </StyledTableCell>
             ))}
           </TableRow>
