@@ -1,66 +1,3 @@
-// import { styled } from "@mui/material/styles";
-// import Table from "@mui/material/Table";
-// import TableBody from "@mui/material/TableBody";
-// import TableCell, { tableCellClasses } from "@mui/material/TableCell";
-// import TableContainer from "@mui/material/TableContainer";
-// import TableHead from "@mui/material/TableHead";
-// import TableRow from "@mui/material/TableRow";
-// import Paper from "@mui/material/Paper";
-
-// // ---- COMMON STYLING ----
-// const StyledTableCell = styled(TableCell)(({ theme }) => ({
-//   [`&.${tableCellClasses.head}`]: {
-//     backgroundColor: "#ffffff", // white background
-//     color: "#1976d2", // blue text
-//     fontWeight: 600,
-//   },
-//   [`&.${tableCellClasses.body}`]: {
-//     fontSize: 14,
-//   },
-// }));
-
-// const StyledTableRow = styled(TableRow)(({ theme }) => ({
-//   "&:nth-of-type(odd)": {
-//     backgroundColor: theme.palette.action.hover,
-//   },
-//   "&:last-child td, &:last-child th": {
-//     border: 0,
-//   },
-// }));
-
-// // ---- REUSABLE TABLE COMPONENT ----
-// export default function DataTable({ columns = [], rows = [] }) {
-//   return (
-//     <TableContainer component={Paper}>
-//       <Table sx={{ minWidth: 700 }}>
-//         <TableHead>
-//           <TableRow>
-//             {columns.map((col) => (
-//               <StyledTableCell key={col.key || col.field}>
-//                 {col.name}
-//               </StyledTableCell>
-//             ))}
-//           </TableRow>
-//         </TableHead>
-
-//         <TableBody>
-//           {rows.map((row, index) => (
-//             <StyledTableRow key={index}>
-//               {columns.map((col) => (
-//                 <StyledTableCell key={col.key || col.field}>
-//                   {col.formatter
-//                     ? col.formatter(row) // 🎉 <-- FIXED
-//                     : row[col.field]}
-//                 </StyledTableCell>
-//               ))}
-//             </StyledTableRow>
-//           ))}
-//         </TableBody>
-//       </Table>
-//     </TableContainer>
-//   );
-// }
-
 import { useState } from "react";
 import { styled } from "@mui/material/styles";
 import Table from "@mui/material/Table";
@@ -131,10 +68,21 @@ export default function DataTable({ columns = [], rows = [] }) {
   }
 
   const getSortIcon = (col) => {
-    if (sortConfig.key !== col.field) return "↕️";
-    if (sortConfig.direction === "asc") return "↑";
-    if (sortConfig.direction === "desc") return "↓";
-    return "↕️";
+    const style = { fontSize: 12, marginLeft: 4, opacity: 0.8 };
+
+    if (sortConfig.key !== col.field) {
+      return <span style={style}>⇅</span>;
+    }
+
+    if (sortConfig.direction === "asc") {
+      return <span style={style}>⇑</span>;
+    }
+
+    if (sortConfig.direction === "desc") {
+      return <span style={style}>⇓</span>;
+    }
+
+    return <span style={style}>⇅</span>;
   };
 
   return (

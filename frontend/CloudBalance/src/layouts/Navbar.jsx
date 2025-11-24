@@ -53,7 +53,7 @@ export default function Navbar({ toggleSidebar }) {
             display: "flex",
             justifyContent: "flex-start",
             flex: 1,
-            pl: "12rem",
+            pl: "9rem",
           }}
         >
           <IconButton

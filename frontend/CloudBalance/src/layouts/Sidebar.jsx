@@ -44,9 +44,15 @@ export default function Sidebar({ open }) {
     },
   ];
 
-  const isActive = (path) =>
-    location.pathname === path ||
-    (path === "/dashboard/users" && location.pathname === "/dashboard");
+  const isActive = (path) => {
+    // USERS → match ANY nested route
+    if (path === "/dashboard/users") {
+      return location.pathname.startsWith("/dashboard/users");
+    }
+
+    // Others → exact match
+    return location.pathname === path;
+  };
 
   return (
     <Drawer

@@ -1,8 +1,11 @@
 import DataTable from "../../components/common/DataTable";
 import { FaEdit, FaTrash } from "react-icons/fa";
-import { Switch } from "@mui/material";
+import { Switch, Button, Paper } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 export default function Users() {
+  const navigate = useNavigate();
+
   const columns = [
     { name: "First Name", field: "firstName", key: "firstName" },
     { name: "Last Name", field: "lastName", key: "lastName" },
@@ -10,7 +13,6 @@ export default function Users() {
     { name: "Roles", field: "roles", key: "roles" },
     { name: "Last Login", field: "lastLogin", key: "lastLogin" },
 
-    // Toggle column
     {
       name: "Active",
       key: "active",
@@ -22,8 +24,6 @@ export default function Users() {
         />
       ),
     },
-
-    // Edit column
     {
       name: "Edit",
       key: "edit",
@@ -35,15 +35,13 @@ export default function Users() {
         />
       ),
     },
-
-    // Delete column
     {
       name: "Delete",
       key: "delete",
       formatter: (row) => (
         <FaTrash
           size={18}
-          style={{ cursor: "pointer", color: "#1976d2" }} // blue
+          style={{ cursor: "pointer", color: "#1976d2" }}
           onClick={() => console.log("Delete user:", row.id)}
         />
       ),
@@ -83,55 +81,40 @@ export default function Users() {
       roles: "Admin",
       lastLogin: "2025-01-11 11:30",
     },
-    {
-      id: 5,
-      firstName: "Simran",
-      lastName: "Arora",
-      email: "simran@test.com",
-      roles: "Viewer",
-      lastLogin: "2025-01-12 12:10",
-    },
-    {
-      id: 6,
-      firstName: "Zoya",
-      lastName: "Ali",
-      email: "zoya@test.com",
-      roles: "Editor",
-      lastLogin: "2025-01-09 16:55",
-    },
-    {
-      id: 7,
-      firstName: "Arjun",
-      lastName: "Singh",
-      email: "arjun@test.com",
-      roles: "Viewer",
-      lastLogin: "2025-01-10 08:40",
-    },
-    {
-      id: 8,
-      firstName: "Meera",
-      lastName: "Joshi",
-      email: "meera@test.com",
-      roles: "Editor",
-      lastLogin: "2025-01-12 10:25",
-    },
-    {
-      id: 9,
-      firstName: "Vikram",
-      lastName: "Kapoor",
-      email: "vikram@test.com",
-      roles: "Admin",
-      lastLogin: "2025-01-11 17:50",
-    },
-    {
-      id: 10,
-      firstName: "Tanya",
-      lastName: "Mishra",
-      email: "tanya@test.com",
-      roles: "Viewer",
-      lastLogin: "2025-01-07 09:15",
-    },
   ];
 
-  return <DataTable columns={columns} rows={rows} />;
+  return (
+    <>
+      {/* Header Top Bar */}
+      <Paper
+        elevation={2}
+        style={{
+          padding: "14px 20px",
+          marginBottom: 16,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <h3 style={{ margin: 0, color: "#1976d2" }}>USERS</h3>
+
+        {/* Navigate to Add User Page */}
+        <Button
+          variant="contained"
+          style={{
+            backgroundColor: "#1976d2",
+            textTransform: "none",
+            paddingLeft: 18,
+            paddingRight: 18,
+          }}
+          onClick={() => navigate("/dashboard/users/add")}
+        >
+          Add New User
+        </Button>
+      </Paper>
+
+      {/* Data Table */}
+      <DataTable columns={columns} rows={rows} />
+    </>
+  );
 }
