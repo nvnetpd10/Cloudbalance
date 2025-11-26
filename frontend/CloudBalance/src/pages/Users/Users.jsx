@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { FaEdit, FaTrash, FaSearch } from "react-icons/fa";
+
 import {
   Button,
   Paper,
@@ -12,7 +14,6 @@ import {
   DialogActions,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { FaEdit, FaTrash } from "react-icons/fa";
 import DataTable from "../../components/common/DataTable";
 import Pagination from "../../components/common/DataPagination";
 import useUsers from "../../components/hooks/useUsers";
@@ -22,76 +23,27 @@ export default function Users() {
   const navigate = useNavigate();
   const { users, loading } = useUsers();
   const [pagedUsers, setPagedUsers] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // Success Alert Dialog (for activate/deactivate)
-  const [alertDialog, setAlertDialog] = useState({
-    open: false,
-    message: "",
-  });
+  const filteredUsers = users.filter((u) =>
+    `${u.firstName} ${u.lastName}`
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase())
+  );
 
-  // Delete Confirmation Dialog
+  const [alertDialog, setAlertDialog] = useState({ open: false, message: "" });
   const [deleteDialog, setDeleteDialog] = useState({
     open: false,
     userId: null,
     userName: "",
   });
+  const [toggleDialog, setToggleDialog] = useState({
+    open: false,
+    userId: null,
+    newState: null,
+    userName: "",
+  });
 
-  // ----------------------------
-  // Toggle Active/Inactive
-  // ----------------------------
-  const handleActiveToggle = (userId, currentState) => {
-    const updatedPagedUsers = pagedUsers.map((user) =>
-      user.id === userId ? { ...user, active: !currentState } : user
-    );
-    setPagedUsers(updatedPagedUsers);
-
-    const newState = !currentState;
-    setAlertDialog({
-      open: true,
-      message: `User has been ${
-        newState ? "activated" : "deactivated"
-      } successfully!`,
-    });
-  };
-
-  const handleCloseAlert = () => {
-    setAlertDialog({ open: false, message: "" });
-  };
-
-  // ----------------------------
-  // Delete User Logic
-  // ----------------------------
-  const handleDeleteClick = (id, name) => {
-    setDeleteDialog({
-      open: true,
-      userId: id,
-      userName: name,
-    });
-  };
-
-  const handleConfirmDelete = () => {
-    const id = deleteDialog.userId;
-
-    // Remove from page users
-    const updatedPaged = pagedUsers.filter((u) => u.id !== id);
-    setPagedUsers(updatedPaged);
-
-    // Remove from global users array (local only)
-    const index = users.findIndex((u) => u.id === id);
-    if (index !== -1) {
-      users.splice(index, 1);
-    }
-
-    setDeleteDialog({ open: false, userId: null, userName: "" });
-  };
-
-  const handleCloseDelete = () => {
-    setDeleteDialog({ open: false, userId: null, userName: "" });
-  };
-
-  // ----------------------------
-  // Columns
-  // ----------------------------
   const columns = [
     {
       name: "First Name",
@@ -139,7 +91,7 @@ export default function Users() {
       formatter: (row) => (
         <Switch
           checked={row.active}
-          onChange={() => handleActiveToggle(row.id, row.active)}
+          onChange={() => handleActiveToggle(row.id, row.active, row.firstName)}
           color="primary"
           size="small"
         />
@@ -154,7 +106,7 @@ export default function Users() {
           size={18}
           color="#1976d2"
           style={{ cursor: "pointer" }}
-          onClick={() => alert("Edit " + row.firstName)}
+          onClick={() => navigate(`/dashboard/users/edit/${row.id}`)}
         />
       ),
     },
@@ -173,20 +125,85 @@ export default function Users() {
     },
   ];
 
-  // Load initial page
   useEffect(() => {
-    if (users.length) setPagedUsers(users.slice(0, 10));
-  }, [users]);
+    if (pagedUsers.length === 0) {
+      const initializedUsers = filteredUsers.map((user) => ({
+        ...user,
+        active: true,
+      }));
+      setPagedUsers(initializedUsers.slice(0, 10));
+    }
+  }, [filteredUsers, pagedUsers.length]);
+
+  const handleActiveToggle = (userId, currentState, userName) => {
+    setToggleDialog({
+      open: true,
+      userId,
+      newState: !currentState,
+      userName,
+    });
+  };
+
+  const handleConfirmToggle = () => {
+    const { userId, newState } = toggleDialog;
+    const updatedPagedUsers = pagedUsers.map((user) =>
+      user.id === userId ? { ...user, active: newState } : user
+    );
+    setPagedUsers(updatedPagedUsers);
+
+    setAlertDialog({
+      open: true,
+      message: `User has been ${
+        newState ? "activated" : "deactivated"
+      } successfully!`,
+    });
+
+    setToggleDialog({
+      open: false,
+      userId: null,
+      newState: null,
+      userName: "",
+    });
+  };
+
+  const handleCancelToggle = () => {
+    setToggleDialog({
+      open: false,
+      userId: null,
+      newState: null,
+      userName: "",
+    });
+  };
+
+  const handleCloseAlert = () => {
+    setAlertDialog({ open: false, message: "" });
+  };
+
+  const handleDeleteClick = (id, name) => {
+    setDeleteDialog({ open: true, userId: id, userName: name });
+  };
+
+  const handleConfirmDelete = () => {
+    const id = deleteDialog.userId;
+    const updatedPaged = pagedUsers.filter((u) => u.id !== id);
+    setPagedUsers(updatedPaged);
+
+    const index = users.findIndex((u) => u.id === id);
+    if (index !== -1) users.splice(index, 1);
+
+    setDeleteDialog({ open: false, userId: null, userName: "" });
+  };
+
+  const handleCloseDelete = () => {
+    setDeleteDialog({ open: false, userId: null, userName: "" });
+  };
 
   const handlePageChange = (page, rowsPerPage) => {
     const start = page * rowsPerPage;
     const end = start + rowsPerPage;
-    setPagedUsers(users.slice(start, end));
+    setPagedUsers(filteredUsers.slice(start, end));
   };
 
-  // ----------------------------
-  // JSX
-  // ----------------------------
   return (
     <>
       <Paper
@@ -197,9 +214,32 @@ export default function Users() {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          gap: "12px",
         }}
       >
         <h3 style={{ margin: 0, color: "#1976d2" }}>USERS</h3>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            border: "1px solid #ccc",
+            padding: "6px 10px",
+            borderRadius: "4px",
+            background: "#fff",
+            width: "980px",
+          }}
+        >
+          <FaSearch size={18} color="#1976d2" />
+          <input
+            type="text"
+            placeholder="Search user by name..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ border: "none", outline: "none", fontSize: "14px" }}
+          />
+        </div>
 
         <Button
           variant="contained"
@@ -218,42 +258,75 @@ export default function Users() {
       <Box sx={{ position: "relative", minHeight: "400px" }}>
         {loading && <FullScreenLoader />}
         <DataTable columns={columns} rows={pagedUsers} />
-        <Pagination total={users.length} onPageChange={handlePageChange} />
+        <Pagination
+          total={filteredUsers.length}
+          onPageChange={handlePageChange}
+        />
       </Box>
 
-      {/* Success Alert Dialog */}
-      <Dialog open={alertDialog.open} onClose={handleCloseAlert}>
-        <DialogTitle>Success</DialogTitle>
+      <Dialog
+        open={toggleDialog.open}
+        onClose={handleCancelToggle}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { p: 3, borderRadius: "12px", boxShadow: 8 } }}
+      >
+        <DialogTitle sx={{ fontSize: "22px", fontWeight: 600 }}>
+          {toggleDialog.newState ? "Activate User" : "Deactivate User"}
+        </DialogTitle>
         <DialogContent>
-          <DialogContentText>{alertDialog.message}</DialogContentText>
+          <DialogContentText sx={{ fontSize: "16px", color: "#333" }}>
+            Are you sure you want to{" "}
+            <strong>{toggleDialog.newState ? "activate" : "deactivate"}</strong>{" "}
+            {toggleDialog.userName}?
+          </DialogContentText>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button
-            onClick={handleCloseAlert}
-            color="primary"
-            variant="contained"
-            autoFocus
+            onClick={handleCancelToggle}
+            sx={{ textTransform: "none", px: 3 }}
           >
-            OK
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmToggle}
+            color={toggleDialog.newState ? "primary" : "error"}
+            variant="contained"
+            sx={{ textTransform: "none", fontWeight: 600, px: 3 }}
+          >
+            {toggleDialog.newState ? "Activate" : "Deactivate"}
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialog.open} onClose={handleCloseDelete}>
-        <DialogTitle>Confirm Delete</DialogTitle>
+      <Dialog
+        open={deleteDialog.open}
+        onClose={handleCloseDelete}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { p: 3, borderRadius: "12px", boxShadow: 8 } }}
+      >
+        <DialogTitle sx={{ fontSize: "22px", fontWeight: 600 }}>
+          Confirm Delete
+        </DialogTitle>
         <DialogContent>
-          <DialogContentText>
+          <DialogContentText sx={{ fontSize: "16px", color: "#333" }}>
             Are you sure you want to delete{" "}
             <strong>{deleteDialog.userName}</strong>?
           </DialogContentText>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete}>Cancel</Button>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={handleCloseDelete}
+            sx={{ textTransform: "none", px: 3 }}
+          >
+            Cancel
+          </Button>
           <Button
             onClick={handleConfirmDelete}
             color="error"
             variant="contained"
+            sx={{ textTransform: "none", fontWeight: 600, px: 3 }}
           >
             Delete
           </Button>
