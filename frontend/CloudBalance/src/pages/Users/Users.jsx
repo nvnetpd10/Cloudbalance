@@ -125,15 +125,27 @@ export default function Users() {
     },
   ];
 
+  // useEffect(() => {
+  //   if (pagedUsers.length === 0) {
+  //     const initializedUsers = filteredUsers.map((user) => ({
+  //       ...user,
+  //       active: true,
+  //     }));
+  //     setPagedUsers(initializedUsers.slice(0, 10));
+  //   }
+  // }, [filteredUsers, pagedUsers.length]);
   useEffect(() => {
-    if (pagedUsers.length === 0) {
-      const initializedUsers = filteredUsers.map((user) => ({
-        ...user,
-        active: true,
-      }));
-      setPagedUsers(initializedUsers.slice(0, 10));
-    }
-  }, [filteredUsers, pagedUsers.length]);
+    const filtered = users.filter((u) =>
+      `${u.firstName} ${u.lastName}`
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())
+    );
+    const initialized = filtered.map((user) => ({
+      ...user,
+      active: user.active !== undefined ? user.active : true,
+    }));
+    setPagedUsers(initialized.slice(0, 10));
+  }, [searchTerm, users]);
 
   const handleActiveToggle = (userId, currentState, userName) => {
     setToggleDialog({
