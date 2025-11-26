@@ -24,13 +24,11 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       >
-        {/* DEFAULT */}
         <Route index element={<Users />} />
-        {/* USERS */}
+
         <Route path="users" element={<Users />} />
-        <Route path="/dashboard/users/add" element={<AddUsers />} />{" "}
-        {/* <--- NEW ROUTE */}
-        {/* OTHERS */}
+        <Route path="users/add" element={<AddUsers />} />
+
         <Route path="onboarding" element={<Onboarding />} />
         <Route path="cost-explorer" element={<CostExplorer />} />
         <Route path="aws-dashboard" element={<AwsDashboard />} />

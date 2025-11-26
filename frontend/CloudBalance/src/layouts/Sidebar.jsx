@@ -7,17 +7,18 @@ import {
   Toolbar,
 } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
-
 import { FaUsers } from "react-icons/fa";
 import { BsGraphUpArrow } from "react-icons/bs";
 import { MdDashboard } from "react-icons/md";
 import { LuLayoutDashboard } from "react-icons/lu";
+import { useSidebar } from "./MainLayout";
 
 const collapsedWidth = 70;
 const expandedWidth = 340;
 
-export default function Sidebar({ open }) {
+export default function Sidebar() {
   const location = useLocation();
+  const { open } = useSidebar();
 
   const currentWidth = open ? expandedWidth : collapsedWidth;
 
@@ -44,15 +45,10 @@ export default function Sidebar({ open }) {
     },
   ];
 
-  const isActive = (path) => {
-    // USERS → match ANY nested route
-    if (path === "/dashboard/users") {
-      return location.pathname.startsWith("/dashboard/users");
-    }
-
-    // Others → exact match
-    return location.pathname === path;
-  };
+  const isActive = (path) =>
+    path === "/dashboard/users"
+      ? location.pathname.startsWith("/dashboard/users")
+      : location.pathname === path;
 
   return (
     <Drawer
@@ -61,21 +57,11 @@ export default function Sidebar({ open }) {
       sx={{
         width: currentWidth,
         flexShrink: 0,
-        transition: (theme) =>
-          theme.transitions.create("width", {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
-          }),
         "& .MuiDrawer-paper": {
           width: currentWidth,
           boxSizing: "border-box",
           borderRight: "1px solid #ddd",
           paddingTop: "30px",
-          transition: (theme) =>
-            theme.transitions.create("width", {
-              easing: theme.transitions.easing.sharp,
-              duration: theme.transitions.duration.enteringScreen,
-            }),
         },
       }}
     >
@@ -96,7 +82,6 @@ export default function Sidebar({ open }) {
                 borderLeft: active
                   ? "4px solid #1976d2"
                   : "4px solid transparent",
-                "&:hover": { bgcolor: "#e0f0ff" },
                 justifyContent: open ? "initial" : "center",
               }}
             >
@@ -106,7 +91,6 @@ export default function Sidebar({ open }) {
                   minWidth: open ? 35 : 0,
                   mr: open ? 1.5 : "auto",
                   justifyContent: "center",
-                  // 🚀 FIX: Add margin-bottom (mb) when sidebar is closed (open === false)
                   mb: open ? 0 : 1.5,
                 }}
               >

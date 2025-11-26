@@ -35,8 +35,6 @@ export default function AddUser() {
         <Typography variant="h5" mb={3} fontWeight="bold" color="#1976d2">
           Add New User
         </Typography>
-
-        {/* 2-column form but with smaller input box width */}
         <Box
           component="form"
           sx={{

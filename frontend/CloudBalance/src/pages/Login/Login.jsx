@@ -56,7 +56,6 @@ export default function Login() {
           background: "white",
         }}
       >
-        {/* Logo */}
         <Avatar
           src={Logo}
           alt="logo"
@@ -69,7 +68,6 @@ export default function Login() {
           }}
         />
 
-        {/* Email input */}
         <TextField
           fullWidth
           label="Email"
@@ -95,7 +93,6 @@ export default function Login() {
           }}
         />
 
-        {/* Password input */}
         <TextField
           fullWidth
           type="password"

@@ -1,17 +1,19 @@
 import {
   AppBar,
   Toolbar,
-  Typography,
   Box,
   Button,
   IconButton,
+  Typography,
 } from "@mui/material";
-import { FiLogOut, FiMenu } from "react-icons/fi";
+import { FiMenu, FiLogOut } from "react-icons/fi";
 import { FaRegUserCircle } from "react-icons/fa";
 import logo from "../assets/images/CloudKeeper_Logo.jpg";
 import { logout } from "../utils/auth";
+import { useSidebar } from "./MainLayout";
 
-export default function Navbar({ toggleSidebar }) {
+export default function Navbar() {
+  const { toggleSidebar } = useSidebar();
   const username = "Navneet Tiwari";
 
   return (
@@ -33,20 +35,18 @@ export default function Navbar({ toggleSidebar }) {
           justifyContent: "space-between",
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <Box
-            component="img"
-            src={logo}
-            alt="CloudBalance Logo"
-            sx={{ height: 83, objectFit: "contain" }}
-          />
-        </Box>
+        <Box
+          component="img"
+          src={logo}
+          alt="CloudBalance Logo"
+          sx={{ height: 83 }}
+        />
 
         <Box
           sx={{
+            flex: 1,
             display: "flex",
             justifyContent: "flex-start",
-            flex: 1,
             pl: "9rem",
           }}
         >
@@ -67,9 +67,7 @@ export default function Navbar({ toggleSidebar }) {
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <FaRegUserCircle size={24} color="#1976d2" />
             <Box>
-              <Typography variant="body2" sx={{ color: "#000" }}>
-                Welcome,
-              </Typography>
+              <Typography variant="body2">Welcome,</Typography>
               <Typography
                 variant="body1"
                 sx={{ color: "#1976d2", fontWeight: "bold" }}
@@ -96,8 +94,7 @@ export default function Navbar({ toggleSidebar }) {
               window.location.href = "/login";
             }}
           >
-            <FiLogOut size={18} />
-            Logout
+            <FiLogOut size={18} /> Logout
           </Button>
         </Box>
       </Toolbar>
