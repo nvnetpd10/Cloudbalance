@@ -1,12 +1,15 @@
-import DataTable from "../../components/common/DataTable";
-import { FaEdit, FaTrash } from "react-icons/fa";
-import { Switch, Button, Paper } from "@mui/material";
+import { useState, useEffect } from "react";
+import { Button, Paper, Chip, Switch } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { Chip } from "@mui/material";
-import usersData from "../../components/data/UserData";
+import { FaEdit, FaTrash } from "react-icons/fa";
+import DataTable from "../../components/common/DataTable";
+import Pagination from "../../components/common/DataPagination";
+import useUsers from "../../components/hooks/useUsers";
 
 export default function Users() {
   const navigate = useNavigate();
+  const { users, loading } = useUsers();
+  const [pagedUsers, setPagedUsers] = useState([]);
 
   const columns = [
     {
@@ -17,7 +20,6 @@ export default function Users() {
     },
     { name: "Last Name", field: "lastName", key: "lastName", sortable: true },
     { name: "Email", field: "email", key: "email", sortable: true },
-
     {
       name: "Roles",
       key: "roles",
@@ -32,7 +34,6 @@ export default function Users() {
                 borderRadius: "4px",
                 padding: "4px 6px",
                 backgroundColor: "#1976d2",
-                borderColor: "#1976d2",
                 color: "#fff",
                 fontWeight: 600,
                 fontSize: "12px",
@@ -48,13 +49,11 @@ export default function Users() {
       key: "lastLogin",
       sortable: true,
     },
-
     {
       name: "Active",
       key: "active",
-      formatter: (row) => <Switch defaultChecked />,
+      formatter: () => <Switch defaultChecked />,
     },
-
     {
       name: "Edit",
       key: "edit",
@@ -67,7 +66,6 @@ export default function Users() {
         />
       ),
     },
-
     {
       name: "Delete",
       key: "delete",
@@ -81,6 +79,17 @@ export default function Users() {
       ),
     },
   ];
+
+  // set default paged users whenever data changes
+  useEffect(() => {
+    if (users.length) setPagedUsers(users.slice(0, 10));
+  }, [users]);
+
+  const handlePageChange = (page, rowsPerPage) => {
+    const start = page * rowsPerPage;
+    const end = start + rowsPerPage;
+    setPagedUsers(users.slice(start, end));
+  };
 
   return (
     <>
@@ -110,7 +119,24 @@ export default function Users() {
         </Button>
       </Paper>
 
-      <DataTable columns={columns} rows={usersData} />
+      {loading ? (
+        <div
+          style={{
+            width: "100%",
+            height: "280px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <span className="loader"></span>
+        </div>
+      ) : (
+        <>
+          <DataTable columns={columns} rows={pagedUsers} />
+          <Pagination total={users.length} onPageChange={handlePageChange} />
+        </>
+      )}
     </>
   );
 }

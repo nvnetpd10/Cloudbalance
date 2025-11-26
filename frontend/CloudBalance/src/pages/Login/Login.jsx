@@ -14,17 +14,35 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
+  const validateEmail = (value) => {
+    if (!value) return "Email is required";
+    if (!value.includes("@")) return "Email must contain @";
+    const parts = value.split("@");
+    if (!parts[1] || !parts[1].includes("."))
+      return "Email must have a valid domain";
+    return "";
+  };
+
+  const validatePassword = (value) => {
+    if (!value) return "Password is required";
+    if (value.length < 5) return "Password must be at least 5 characters";
+    if (!/[A-Za-z]/.test(value)) return "Password must contain a letter";
+    if (!/[0-9]/.test(value)) return "Password must contain a number";
+    if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(value))
+      return "Password must contain a special character";
+    return "";
+  };
 
   const handleLogin = () => {
-    if (emailError) {
-      alert("Please enter a valid email");
-      return;
-    }
+    const emailErr = validateEmail(email);
+    const passwordErr = validatePassword(password);
 
-    if (!email || !password) {
-      alert("Enter Email & Password");
-      return;
-    }
+    setEmailError(emailErr);
+    setPasswordError(passwordErr);
+
+    if (emailErr || passwordErr) return;
 
     login(email);
     window.location.href = "/dashboard/users";
@@ -79,12 +97,7 @@ export default function Login() {
           onChange={(e) => {
             const value = e.target.value;
             setEmail(value);
-
-            if (!value.includes("@")) {
-              setEmailError("Email must contain @");
-            } else {
-              setEmailError("");
-            }
+            setEmailError(validateEmail(value));
           }}
           sx={{
             "& .MuiOutlinedInput-root": {
@@ -100,7 +113,13 @@ export default function Login() {
           variant="outlined"
           margin="normal"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          error={!!passwordError}
+          helperText={passwordError}
+          onChange={(e) => {
+            const value = e.target.value;
+            setPassword(value);
+            setPasswordError(validatePassword(value));
+          }}
           sx={{
             "& .MuiOutlinedInput-root": {
               borderRadius: "12px",
