@@ -1,15 +1,84 @@
 import { useState, useEffect } from "react";
-import { Button, Paper, Chip, Switch } from "@mui/material";
+import {
+  Button,
+  Paper,
+  Chip,
+  Switch,
+  Box,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import DataTable from "../../components/common/DataTable";
 import Pagination from "../../components/common/DataPagination";
 import useUsers from "../../components/hooks/useUsers";
+import FullScreenLoader from "../../components/common/FullScreenLoader";
 
 export default function Users() {
   const navigate = useNavigate();
   const { users, loading } = useUsers();
   const [pagedUsers, setPagedUsers] = useState([]);
+  const [alertDialog, setAlertDialog] = useState({
+    open: false,
+    message: "",
+  });
+
+  const [deleteDialog, setDeleteDialog] = useState({
+    open: false,
+    userId: null,
+    userName: "",
+  });
+
+  const handleDeleteClick = (id, name) => {
+    setDeleteDialog({
+      open: true,
+      userId: id,
+      userName: name,
+    });
+  };
+
+  const handleConfirmDelete = () => {
+    const id = deleteDialog.userId;
+
+    const updatedPaged = pagedUsers.filter((u) => u.id !== id);
+    setPagedUsers(updatedPaged);
+
+    users.splice(
+      users.findIndex((u) => u.id === id),
+      1
+    );
+
+    setDeleteDialog({ open: false, userId: null, userName: "" });
+  };
+
+  const handleCloseDelete = () => {
+    setDeleteDialog({ open: false, userId: null, userName: "" });
+  };
+
+  const handleActiveToggle = (userId, currentState) => {
+    // First, update the switch state
+    const updatedPagedUsers = pagedUsers.map((user) =>
+      user.id === userId ? { ...user, active: !currentState } : user
+    );
+    setPagedUsers(updatedPagedUsers);
+
+    // Then show the alert
+    const newState = !currentState;
+    setAlertDialog({
+      open: true,
+      message: `User has been ${
+        newState ? "activated" : "deactivated"
+      } successfully!`,
+    });
+  };
+
+  const handleCloseAlert = () => {
+    setAlertDialog({ open: false, message: "" });
+  };
 
   const columns = [
     {
@@ -52,7 +121,14 @@ export default function Users() {
     {
       name: "Active",
       key: "active",
-      formatter: () => <Switch defaultChecked />,
+      formatter: (row) => (
+        <Switch
+          checked={row.active}
+          onChange={() => handleActiveToggle(row.id, row.active)}
+          color="primary"
+          size="small"
+        />
+      ),
     },
     {
       name: "Edit",
@@ -74,13 +150,12 @@ export default function Users() {
           size={18}
           color="#1976d2"
           style={{ cursor: "pointer" }}
-          onClick={() => alert("Delete " + row.firstName)}
+          onClick={() => handleDeleteClick(row.id, row.firstName)}
         />
       ),
     },
   ];
 
-  // set default paged users whenever data changes
   useEffect(() => {
     if (users.length) setPagedUsers(users.slice(0, 10));
   }, [users]);
@@ -119,24 +194,52 @@ export default function Users() {
         </Button>
       </Paper>
 
-      {loading ? (
-        <div
-          style={{
-            width: "100%",
-            height: "280px",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <span className="loader"></span>
-        </div>
-      ) : (
-        <>
-          <DataTable columns={columns} rows={pagedUsers} />
-          <Pagination total={users.length} onPageChange={handlePageChange} />
-        </>
-      )}
+      <Box sx={{ position: "relative", minHeight: "400px" }}>
+        {loading && <FullScreenLoader />}
+        <DataTable columns={columns} rows={pagedUsers} />
+        <Pagination total={users.length} onPageChange={handlePageChange} />
+      </Box>
+
+      <Dialog open={alertDialog.open} onClose={handleCloseAlert}>
+        <DialogTitle>Success</DialogTitle>
+        <DialogContent>
+          <DialogContentText>{alertDialog.message}</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={handleCloseAlert}
+            color="primary"
+            variant="contained"
+            autoFocus
+          >
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={deleteDialog.open} onClose={handleCloseDelete}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete{" "}
+            <strong>{deleteDialog.userName}</strong>?
+          </DialogContentText>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={handleCloseDelete} color="primary">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            color="error"
+            variant="contained"
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }
