@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   TextField,
@@ -7,7 +7,8 @@ import {
   Paper,
   Avatar,
 } from "@mui/material";
-import { login } from "../../utils/auth";
+import { login, isLoggedIn } from "../../utils/auth";
+import { useNavigate } from "react-router-dom";
 import Logo from "../../assets/images/CloudKeeper_Logo.jpg";
 
 export default function Login() {
@@ -15,6 +16,14 @@ export default function Login() {
   const [emailError, setEmailError] = useState("");
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isLoggedIn()) {
+      navigate("/dashboard/users", { replace: true });
+    }
+  }, []);
 
   const validateEmail = (value) => {
     if (!value) return "Email is required";
@@ -45,7 +54,7 @@ export default function Login() {
     if (emailErr || passwordErr) return;
 
     login(email);
-    window.location.href = "/dashboard/users";
+    navigate("/dashboard/users");
   };
 
   return (

@@ -268,12 +268,18 @@ export default function Users() {
       </Paper>
 
       <Box sx={{ position: "relative", minHeight: "400px" }}>
-        {loading && <FullScreenLoader />}
-        <DataTable columns={columns} rows={pagedUsers} />
-        <Pagination
-          total={filteredUsers.length}
-          onPageChange={handlePageChange}
-        />
+        {loading ? (
+          <FullScreenLoader />
+        ) : (
+          <DataTable columns={columns} rows={pagedUsers} />
+        )}
+
+        {!loading && (
+          <Pagination
+            total={filteredUsers.length}
+            onPageChange={handlePageChange}
+          />
+        )}
       </Box>
 
       <Dialog
