@@ -5,15 +5,21 @@ import {
   Button,
   IconButton,
   Typography,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import { FiMenu, FiLogOut } from "react-icons/fi";
 import { FaRegUserCircle } from "react-icons/fa";
 import logo from "../assets/images/CloudKeeper_Logo.jpg";
 import { logout } from "../utils/auth";
 import { useSidebar } from "./MainLayout";
+import { useState } from "react";
 
 export default function Navbar() {
   const { toggleSidebar } = useSidebar();
+  const [module, setModule] = useState("");
   const username = "Navneet Tiwari";
 
   return (
@@ -57,10 +63,41 @@ export default function Navbar() {
               border: "1px solid #1976d2",
               borderRadius: "8px",
               padding: "6px",
+              width: 40,
+              height: 40,
+              mr: 3,
+              mt: 1.5,
             }}
           >
             <FiMenu size={26} />
           </IconButton>
+
+          <Box sx={{ minWidth: 140 }}>
+            <Typography
+              variant="caption"
+              sx={{ fontWeight: "bold", color: "#1976d2", fontSize: "1rem" }}
+            >
+              Module
+            </Typography>
+
+            <FormControl fullWidth size="small">
+              <InputLabel id="module-select-label">Select</InputLabel>
+
+              <Select
+                labelId="module-select-label"
+                id="module-select"
+                value={module}
+                label="Select"
+                onChange={(e) => setModule(e.target.value)}
+                sx={{
+                  color: "#1976d2",
+                }}
+              >
+                <MenuItem value={"lens"}>Lens</MenuItem>
+                <MenuItem value={"tuner"}>Tuner</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
         </Box>
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 5 }}>

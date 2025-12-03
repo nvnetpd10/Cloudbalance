@@ -9,6 +9,7 @@ import Onboarding from "../pages/Onboarding/Onboarding";
 import CostExplorer from "../pages/CostExplorer/CostExplorer";
 import AwsDashboard from "../pages/AwsDashboard/AwsDashboard";
 import NotFound from "../pages/NotFound/NotFound";
+import EC2Table from "../pages/AwsDashboard/Tables/EC2Table";
 
 export default function AppRoutes() {
   return (
@@ -31,6 +32,7 @@ export default function AppRoutes() {
         <Route path="onboarding" element={<Onboarding />} />
         <Route path="cost-explorer" element={<CostExplorer />} />
         <Route path="aws-dashboard" element={<AwsDashboard />} />
+        <Route path="aws-dashboard/ec2" element={<EC2Table />} />
         <Route path="*" element={<NotFound />} />
       </Route>
       <Route path="*" element={<NotFound />} />

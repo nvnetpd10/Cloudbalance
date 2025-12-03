@@ -1,20 +1,20 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-export default function useUsers() {
-  const [users, setUsers] = useState([]);
+export default function useAwsEC2() {
+  const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchResources = async () => {
       try {
         await new Promise((res) => setTimeout(res, 1000));
 
         const res = await axios.get(
-          "https://mocki.io/v1/bde0f2c9-827f-4b70-aa4e-4cf317d6d6d2"
+          "https://mocki.io/v1/b7a7e9b6-d3ac-4fb2-9c21-fd8e1d9796d7"
         );
 
-        setUsers(res.data);
+        setResources(res.data);
         setLoading(false);
       } catch (error) {
         console.error("API Error:", error);
@@ -22,8 +22,8 @@ export default function useUsers() {
       }
     };
 
-    fetchUsers();
+    fetchResources();
   }, []);
 
-  return { users, loading };
+  return { resources, loading };
 }
