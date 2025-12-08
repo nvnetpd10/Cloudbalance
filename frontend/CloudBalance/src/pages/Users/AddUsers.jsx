@@ -6,12 +6,14 @@ import {
   Paper,
   MenuItem,
 } from "@mui/material";
-import { useOutletContext, useParams } from "react-router-dom";
+import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import axios from "axios";
 
 export default function AddUser() {
   const { open } = useOutletContext();
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const isEdit = Boolean(id);
 
@@ -38,11 +40,26 @@ export default function AddUser() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = () => {
-    if (isEdit) {
-      alert("User updated!");
-    } else {
-      alert("User created!");
+  const handleSubmit = async () => {
+    try {
+      const payload = {
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        role: form.role,
+        active: true,
+      };
+
+      console.log("Sending:", payload);
+
+      await axios.post("http://localhost:8080/users/addUsers", payload, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      navigate("/dashboard/users");
+    } catch (error) {
+      console.error("Error adding user:", error.response?.data || error);
     }
   };
 
@@ -126,6 +143,7 @@ export default function AddUser() {
         </Box>
 
         <Button
+          type="button"
           variant="contained"
           size="large"
           sx={{ mt: 4, py: 1.4, width: "200px" }}

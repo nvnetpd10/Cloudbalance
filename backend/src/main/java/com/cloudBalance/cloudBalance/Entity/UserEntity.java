@@ -18,6 +18,9 @@ public class UserEntity {
     private String firstName;
     private String lastName;
     private String email;
+    private String role;
+    private Instant lastLogin=null;
+    private boolean active=true;
 
     public UserEntity(){
 
@@ -31,6 +34,19 @@ public class UserEntity {
         this.role = role;
         this.lastLogin = lastLogin;
         this.active = active;
+    }
+
+    @Override
+    public String toString() {
+        return "UserEntity{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                ", role='" + role + '\'' +
+                ", lastLogin=" + lastLogin +
+                ", active=" + active +
+                '}';
     }
 
     public Long getId() {
@@ -89,20 +105,7 @@ public class UserEntity {
         this.active = active;
     }
 
-    @Override
-    public String toString() {
-        return "UserEntity{" +
-                "id=" + id +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", email='" + email + '\'' +
-                ", role='" + role + '\'' +
-                ", lastLogin=" + lastLogin +
-                ", active=" + active +
-                '}';
-    }
 
-    private String role;
-    private Instant lastLogin=null;
-    private boolean active=false;
+
+
 }

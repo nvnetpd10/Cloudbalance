@@ -115,7 +115,7 @@ export default function Users() {
     );
     const initialized = filtered.map((user) => ({
       ...user,
-      active: user.active !== undefined ? user.active : true,
+      active: user.active !== undefined ? user.active : true, // ← This sets true if undefined
     }));
     setPagedUsers(initialized.slice(0, 10));
   }, [searchTerm, users]);
