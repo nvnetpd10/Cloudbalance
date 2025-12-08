@@ -55,26 +55,21 @@ export default function Users() {
     { name: "Email", field: "email", key: "email", sortable: true },
 
     {
-      name: "Roles",
-      key: "roles",
+      name: "Role",
+      key: "role",
       formatter: (row) => (
-        <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
-          {row.roles.map((role, i) => (
-            <Chip
-              key={i}
-              label={role}
-              size="small"
-              style={{
-                borderRadius: "4px",
-                padding: "4px 6px",
-                backgroundColor: "#1976d2",
-                color: "#fff",
-                fontWeight: 600,
-                fontSize: "12px",
-              }}
-            />
-          ))}
-        </div>
+        <Chip
+          label={row.role}
+          size="small"
+          style={{
+            borderRadius: "4px",
+            padding: "4px 6px",
+            backgroundColor: "#1976d2",
+            color: "#fff",
+            fontWeight: 600,
+            fontSize: "12px",
+          }}
+        />
       ),
     },
 
@@ -110,30 +105,8 @@ export default function Users() {
         />
       ),
     },
-
-    {
-      name: "Delete",
-      key: "delete",
-      formatter: (row) => (
-        <FaTrash
-          size={18}
-          color="#1976d2"
-          style={{ cursor: "pointer" }}
-          onClick={() => handleDeleteClick(row.id, row.firstName)}
-        />
-      ),
-    },
   ];
 
-  // useEffect(() => {
-  //   if (pagedUsers.length === 0) {
-  //     const initializedUsers = filteredUsers.map((user) => ({
-  //       ...user,
-  //       active: true,
-  //     }));
-  //     setPagedUsers(initializedUsers.slice(0, 10));
-  //   }
-  // }, [filteredUsers, pagedUsers.length]);
   useEffect(() => {
     const filtered = users.filter((u) =>
       `${u.firstName} ${u.lastName}`
@@ -185,14 +158,6 @@ export default function Users() {
       newState: null,
       userName: "",
     });
-  };
-
-  const handleCloseAlert = () => {
-    setAlertDialog({ open: false, message: "" });
-  };
-
-  const handleDeleteClick = (id, name) => {
-    setDeleteDialog({ open: true, userId: id, userName: name });
   };
 
   const handleConfirmDelete = () => {

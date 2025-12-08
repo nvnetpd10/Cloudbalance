@@ -10,9 +10,8 @@ export default function useUsers() {
       try {
         await new Promise((res) => setTimeout(res, 1000));
 
-        const res = await axios.get(
-          "https://mocki.io/v1/bde0f2c9-827f-4b70-aa4e-4cf317d6d6d2"
-        );
+        const res = await axios.get("http://localhost:8080/users/getUsers");
+        console.log(res, "alsjdadaj");
 
         setUsers(res.data);
         setLoading(false);
