@@ -16,7 +16,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import DataTable from "../../components/common/DataTable";
 import Pagination from "../../components/common/DataPagination";
-import useUsers from "../../components/hooks/useUsers";
+import useUsers from "../../components/hooks/Users/useUsers";
 import FullScreenLoader from "../../components/common/FullScreenLoader";
 
 export default function Users() {
@@ -115,7 +115,7 @@ export default function Users() {
     );
     const initialized = filtered.map((user) => ({
       ...user,
-      active: user.active !== undefined ? user.active : true, // ← This sets true if undefined
+      active: user.active !== undefined ? user.active : true,
     }));
     setPagedUsers(initialized.slice(0, 10));
   }, [searchTerm, users]);

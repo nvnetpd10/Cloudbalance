@@ -12,7 +12,7 @@ import {
   Button,
 } from "@mui/material";
 
-import useAwsAGS from "../../../components/hooks/useAwsAGS";
+import useAwsAGS from "../../../components/hooks/AWS/useAwsAGS";
 import DataTable from "../../../components/common/DataTable";
 import Pagination from "../../../components/common/DataPagination";
 import FullScreenLoader from "../../../components/common/FullScreenLoader";

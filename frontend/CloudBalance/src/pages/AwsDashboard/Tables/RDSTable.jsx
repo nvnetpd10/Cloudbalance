@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Paper, Box, Chip } from "@mui/material";
-import useAwsRDS from "../../../components/hooks/useAwsRDS";
+import useAwsRDS from "../../../components/hooks/AWS/useAwsRDS";
 import DataTable from "../../../components/common/DataTable";
 import Pagination from "../../../components/common/DataPagination";
 import FullScreenLoader from "../../../components/common/FullScreenLoader";

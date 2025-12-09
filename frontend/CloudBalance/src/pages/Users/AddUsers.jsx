@@ -9,11 +9,13 @@ import {
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import useUserActions from "../../components/hooks/Users/useUserActions";
 
 export default function AddUser() {
   const { open } = useOutletContext();
   const { id } = useParams();
   const navigate = useNavigate();
+  const { addUser, updateUser } = useUserActions();
 
   const isEdit = Boolean(id);
 
@@ -26,15 +28,22 @@ export default function AddUser() {
 
   useEffect(() => {
     if (isEdit) {
-      const existingUser = {
-        firstName: "",
-        lastName: "",
-        email: "",
-        role: "",
-      };
-      setForm(existingUser);
+      axios
+        .get(`http://localhost:8080/users/getUsers`)
+        .then((res) => {
+          const user = res.data.find((u) => u.id == id);
+          if (user) {
+            setForm({
+              firstName: user.firstName,
+              lastName: user.lastName,
+              email: user.email,
+              role: user.role,
+            });
+          }
+        })
+        .catch((err) => console.error(err));
     }
-  }, [isEdit]);
+  }, [isEdit, id]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -50,16 +59,15 @@ export default function AddUser() {
         active: true,
       };
 
-      console.log("Sending:", payload);
+      if (isEdit) {
+        await updateUser(id, payload);
+      } else {
+        await addUser(payload);
+      }
 
-      await axios.post("http://localhost:8080/users/addUsers", payload, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
       navigate("/dashboard/users");
     } catch (error) {
-      console.error("Error adding user:", error.response?.data || error);
+      console.error("Error:", error.response?.data || error);
     }
   };
 

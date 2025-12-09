@@ -11,7 +11,7 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
-import useAwsEC2 from "../../../components/hooks/useAwsEC2";
+import useAwsEC2 from "../../../components/hooks/AWS/useAwsEC2";
 import DataTable from "../../../components/common/DataTable";
 import Pagination from "../../../components/common/DataPagination";
 import FullScreenLoader from "../../../components/common/FullScreenLoader";

@@ -1,6 +1,9 @@
 package com.cloudBalance.cloudBalance.ServiceImpl;
 
+import com.cloudBalance.cloudBalance.DTO.UserRequestDTO;
+import com.cloudBalance.cloudBalance.DTO.UserResponseDTO;
 import com.cloudBalance.cloudBalance.Entity.UserEntity;
+import com.cloudBalance.cloudBalance.Mapper.UserMapper;
 import com.cloudBalance.cloudBalance.Repository.UserRepository;
 import com.cloudBalance.cloudBalance.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,15 +15,35 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     @Autowired
-    private  UserRepository userRepository;
+    private UserRepository userRepository;
+
     @Override
-    public List<UserEntity> getUsers() {
-       List<UserEntity> list =  userRepository.findAll();
-        return list;
+    public List<UserResponseDTO> getUsers() {
+        return userRepository.findAll()
+                .stream()
+                .map(UserMapper::toResponseDTO)
+                .toList();
     }
 
     @Override
-    public UserEntity addUsers(UserEntity user) {
-        return userRepository.save(user);
+    public UserResponseDTO addUsers(UserRequestDTO dto) {
+        UserEntity user = UserMapper.toEntity(dto);
+        UserEntity saved = userRepository.save(user);
+        return UserMapper.toResponseDTO(saved);
     }
+
+    @Override
+    public UserResponseDTO updateUsers(Long id, UserRequestDTO dto) {
+
+        UserEntity existing = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        existing.setFirstName(dto.getFirstName());
+        existing.setLastName(dto.getLastName());
+        existing.setEmail(dto.getEmail());
+        existing.setRole(dto.getRole());
+        // existing.setLastLogin(existing.getLastLogin());
+        UserEntity updated = userRepository.save(existing);
+        return UserMapper.toResponseDTO(updated);
+    }
+
 }

@@ -1,12 +1,13 @@
 package com.cloudBalance.cloudBalance.Service;
 
-import com.cloudBalance.cloudBalance.Entity.UserEntity;
-import org.springframework.stereotype.Service;
+import com.cloudBalance.cloudBalance.DTO.UserRequestDTO;
+import com.cloudBalance.cloudBalance.DTO.UserResponseDTO;
 
 import java.util.List;
 
 public interface UserService {
 
-    public List<UserEntity> getUsers();
-    UserEntity addUsers(UserEntity user);
+    List<UserResponseDTO> getUsers();
+    UserResponseDTO addUsers(UserRequestDTO userRequestDTO);
+    UserResponseDTO updateUsers(Long id , UserRequestDTO dto);
 }

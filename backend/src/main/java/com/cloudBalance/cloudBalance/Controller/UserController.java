@@ -1,12 +1,11 @@
 package com.cloudBalance.cloudBalance.Controller;
 
-
-import com.cloudBalance.cloudBalance.Entity.UserEntity;
+import com.cloudBalance.cloudBalance.DTO.UserRequestDTO;
+import com.cloudBalance.cloudBalance.DTO.UserResponseDTO;
 import com.cloudBalance.cloudBalance.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.SQLOutput;
 import java.util.List;
 
 @RestController
@@ -16,14 +15,21 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
     @GetMapping("/getUsers")
-    public List<UserEntity> getUsers(){
-        List<UserEntity> list = userService.getUsers();
-        return list;
+    public List<UserResponseDTO> getUsers(){
+        return userService.getUsers();
     }
 
     @PostMapping("/addUsers")
-    public UserEntity addUsers(@RequestBody UserEntity user){
-        return userService.addUsers(user);
+    public UserResponseDTO addUsers(@RequestBody UserRequestDTO userRequestDTO) {
+        return userService.addUsers(userRequestDTO);
     }
+
+    @PutMapping("/updateUsers/{id}")
+    public UserResponseDTO updateUsers(@PathVariable Long id,
+                                       @RequestBody UserRequestDTO dto) {
+        return userService.updateUsers(id, dto);
+    }
+
 }
