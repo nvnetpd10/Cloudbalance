@@ -16,6 +16,7 @@ export default function AddUser() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addUser, updateUser } = useUserActions();
+  const [errors, setErrors] = useState({});
 
   const isEdit = Boolean(id);
 
@@ -50,6 +51,19 @@ export default function AddUser() {
   };
 
   const handleSubmit = async () => {
+    const newErrors = {};
+
+    if (!form.firstName.trim()) newErrors.firstName = "First name is required";
+    if (!form.lastName.trim()) newErrors.lastName = "Last name is required";
+    if (!form.email.trim()) newErrors.email = "Email is required";
+    if (!form.role.trim()) newErrors.role = "Role is required";
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      return;
+    }
+
     try {
       const payload = {
         firstName: form.firstName,
@@ -111,6 +125,8 @@ export default function AddUser() {
             value={form.firstName}
             onChange={handleChange}
             required
+            error={!!errors.firstName}
+            helperText={errors.firstName}
             fullWidth
             sx={{ maxWidth: "380px" }}
           />
@@ -121,6 +137,8 @@ export default function AddUser() {
             value={form.lastName}
             onChange={handleChange}
             required
+            error={!!errors.lastName}
+            helperText={errors.lastName}
             fullWidth
             sx={{ maxWidth: "380px" }}
           />
@@ -131,6 +149,8 @@ export default function AddUser() {
             value={form.email}
             onChange={handleChange}
             required
+            error={!!errors.email}
+            helperText={errors.email}
             fullWidth
             sx={{ maxWidth: "380px" }}
           />
@@ -141,6 +161,9 @@ export default function AddUser() {
             name="role"
             value={form.role}
             onChange={handleChange}
+            required
+            error={!!errors.role}
+            helperText={errors.role}
             fullWidth
             sx={{ maxWidth: "380px" }}
           >

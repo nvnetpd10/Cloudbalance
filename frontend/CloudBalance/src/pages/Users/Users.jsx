@@ -78,6 +78,7 @@ export default function Users() {
       field: "lastLogin",
       key: "lastLogin",
       sortable: true,
+      formatter: (row) => (row.lastLogin ? row.lastLogin : "--"),
     },
 
     {
