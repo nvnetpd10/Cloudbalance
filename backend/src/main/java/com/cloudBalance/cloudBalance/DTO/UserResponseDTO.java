@@ -10,6 +10,7 @@ public class UserResponseDTO {
     private String lastName;
     private String email;
     private String role;
+    private String password;
     private Instant lastLogin;
     private boolean active;
 
@@ -69,6 +70,14 @@ public class UserResponseDTO {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }
 

@@ -25,6 +25,7 @@ export default function AddUser() {
     lastName: "",
     email: "",
     role: "",
+    password: "",
   });
 
   useEffect(() => {
@@ -40,9 +41,8 @@ export default function AddUser() {
               lastName: user.lastName || "",
               email: user.email || "",
               role: user.role || "",
+              password: user.password || "",
             });
-          } else {
-            console.log("User not found with ID:", id);
           }
         })
         .catch((err) => {
@@ -53,8 +53,13 @@ export default function AddUser() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     setForm({ ...form, [name]: value });
+  };
+
+  const isValidPassword = (password) => {
+    const regex =
+      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{5,}$/;
+    return regex.test(password);
   };
 
   const handleSubmit = async () => {
@@ -65,11 +70,16 @@ export default function AddUser() {
     if (!form.email.trim()) newErrors.email = "Email is required";
     if (!form.role.trim()) newErrors.role = "Role is required";
 
+    if (!form.password.trim()) {
+      newErrors.password = "Password is required";
+    } else if (!isValidPassword(form.password)) {
+      newErrors.password =
+        "Min 5 chars, 1 letter, 1 number & 1 special character required";
+    }
+
     setErrors(newErrors);
 
-    if (Object.keys(newErrors).length > 0) {
-      return;
-    }
+    if (Object.keys(newErrors).length > 0) return;
 
     try {
       const payload = {
@@ -77,6 +87,7 @@ export default function AddUser() {
         lastName: form.lastName,
         email: form.email,
         role: form.role,
+        password: form.password,
         active: true,
       };
 
@@ -178,6 +189,19 @@ export default function AddUser() {
             <MenuItem value="manager">Manager</MenuItem>
             <MenuItem value="user">User</MenuItem>
           </TextField>
+
+          <TextField
+            label="Password"
+            name="password"
+            type="password"
+            value={form.password}
+            onChange={handleChange}
+            required
+            error={!!errors.password}
+            helperText={errors.password}
+            fullWidth
+            sx={{ maxWidth: "380px" }}
+          />
         </Box>
 
         <Button
