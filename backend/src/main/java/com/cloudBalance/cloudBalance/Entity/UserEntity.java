@@ -19,6 +19,7 @@ public class UserEntity {
     private String lastName;
     private String email;
     private String role;
+    private String password;
     private Instant lastLogin=null;
     private boolean active=true;
 
@@ -26,7 +27,7 @@ public class UserEntity {
 
     }
 
-    public UserEntity(Long id, String firstName, String lastName, String email, String role, Instant lastLogin, boolean active) {
+    public UserEntity(Long id, String firstName, String lastName, String email, String role, String password ,   Instant lastLogin, boolean active) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -34,6 +35,7 @@ public class UserEntity {
         this.role = role;
         this.lastLogin = lastLogin;
         this.active = active;
+        this.password = password;
     }
 
     @Override
@@ -44,6 +46,7 @@ public class UserEntity {
                 ", lastName='" + lastName + '\'' +
                 ", email='" + email + '\'' +
                 ", role='" + role + '\'' +
+                ", password='" + password + '\'' +
                 ", lastLogin=" + lastLogin +
                 ", active=" + active +
                 '}';
@@ -87,6 +90,13 @@ public class UserEntity {
 
     public void setRole(String role) {
         this.role = role;
+    }
+    public String getPassword(){
+        return password;
+    }
+
+    public void setPassword(String password){
+        this.password = password;
     }
 
     public Instant getLastLogin() {
