@@ -1,4 +1,184 @@
-import { React, useState } from "react";
+// import React, { useState, useRef } from "react";
+// import ReactECharts from "echarts-for-react";
+// import {
+//   Box,
+//   Paper,
+//   Typography,
+//   Button,
+//   Stack,
+//   Switch,
+//   Menu,
+//   MenuItem,
+//   TextField,
+//   ToggleButton,
+//   ToggleButtonGroup,
+//   Popper,
+// } from "@mui/material";
+// import BarChartIcon from "@mui/icons-material/BarChart";
+// import ShowChartIcon from "@mui/icons-material/ShowChart";
+// import StackedBarChartIcon from "@mui/icons-material/StackedBarChart";
+// import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+// import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+
+// import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+// import { StaticDatePicker } from "@mui/x-date-pickers/StaticDatePicker";
+// import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+// import dayjs from "dayjs";
+
+// const CostExplorer = () => {
+//   const [tab, setTab] = useState(0);
+//   const [anchorEl, setAnchorEl] = useState(null);
+
+//   const [startDate, setStartDate] = useState(dayjs("2025-06-01"));
+//   const [endDate, setEndDate] = useState(dayjs("2025-11-30"));
+
+//   const [interval, setInterval] = useState("monthly");
+//   const [chartType, setChartType] = useState("grouped");
+
+//   const [open, setOpen] = useState(false);
+//   const rangeRef = useRef(null);
+
+//   const handleMoreClick = (e) => setAnchorEl(e.currentTarget);
+//   const handleClose = () => setAnchorEl(null);
+
+//   const baseSeries = [
+//     { name: "AWS Service", data: [36000, 40000, 35000, 37000, 33000, 31000] },
+//     {
+//       name: "Amazon Appstore",
+//       data: [25000, 24000, 26000, 24000, 23500, 22000],
+//     },
+//     { name: "CK Discount", data: [5000, 6000, 4500, 5200, 4800, 5100] },
+//   ];
+
+//   const getSeries = () => {
+//     if (chartType === "line")
+//       return baseSeries.map((s) => ({ ...s, type: "line", smooth: true }));
+//     if (chartType === "stacked")
+//       return baseSeries.map((s) => ({ ...s, type: "bar", stack: "total" }));
+//     return baseSeries.map((s) => ({ ...s, type: "bar" }));
+//   };
+
+//   const option = {
+//     tooltip: { trigger: "axis" },
+//     legend: { bottom: 0 },
+//     grid: { left: "3%", right: "3%", bottom: "18%", containLabel: true },
+//     xAxis: {
+//       type: "category",
+//       data: [
+//         "Jun 2025",
+//         "Jul 2025",
+//         "Aug 2025",
+//         "Sep 2025",
+//         "Oct 2025",
+//         "Nov 2025",
+//       ],
+//     },
+//     yAxis: { type: "value", name: "Cost ($)" },
+//     series: getSeries(),
+//   };
+
+//   return (
+//     <>
+//       <LocalizationProvider dateAdapter={AdapterDayjs}>
+//         <Popper
+//           open={open}
+//           anchorEl={rangeRef.current}
+//           placement="bottom-start"
+//         >
+//           <Paper sx={{ p: 2 }}>
+//             <Stack direction="row" spacing={2}>
+//               <StaticDatePicker
+//                 displayStaticWrapperAs="desktop"
+//                 value={startDate}
+//                 onChange={(v) => setStartDate(v)}
+//               />
+//               <StaticDatePicker
+//                 displayStaticWrapperAs="desktop"
+//                 value={endDate}
+//                 onChange={(v) => setEndDate(v)}
+//               />
+//             </Stack>
+
+//             <Stack direction="row" justifyContent="flex-end" mt={1}>
+//               <Button
+//                 size="small"
+//                 variant="contained"
+//                 onClick={() => setOpen(false)}
+//               >
+//                 Done
+//               </Button>
+//             </Stack>
+//           </Paper>
+//         </Popper>
+//       </LocalizationProvider>
+
+//       <Box sx={{ mb: 2 }}>
+//         <Stack direction="row" justifyContent="space-between">
+//           <Typography variant="h5" fontWeight={600}>
+//             Cost Explorer
+//           </Typography>
+//           <Button variant="contained">Recent Reports</Button>
+//         </Stack>
+//       </Box>
+
+//       <Paper sx={{ p: 2 }}>
+//         <Stack
+//           direction="row"
+//           justifyContent="space-between"
+//           alignItems="center"
+//         >
+//           <Typography variant="body2">Costs ($)</Typography>
+
+//           <Stack direction="row" spacing={1} alignItems="center">
+//             <TextField
+//               ref={rangeRef}
+//               size="small"
+//               sx={{ width: 230, cursor: "pointer" }}
+//               value={`${startDate.format("DD-MMM-YYYY")} – ${endDate.format(
+//                 "DD-MMM-YYYY"
+//               )}`}
+//               InputProps={{ readOnly: true }}
+//               onClick={() => setOpen(true)}
+//             />
+
+//             <ToggleButtonGroup
+//               size="small"
+//               exclusive
+//               value={interval}
+//               onChange={(e, v) => v && setInterval(v)}
+//             >
+//               <ToggleButton value="daily">Daily</ToggleButton>
+//               <ToggleButton value="monthly">Monthly</ToggleButton>
+//             </ToggleButtonGroup>
+
+//             <ToggleButtonGroup
+//               size="small"
+//               exclusive
+//               value={chartType}
+//               onChange={(e, v) => v && setChartType(v)}
+//             >
+//               <ToggleButton value="grouped">
+//                 <BarChartIcon fontSize="small" />
+//               </ToggleButton>
+//               <ToggleButton value="line">
+//                 <ShowChartIcon fontSize="small" />
+//               </ToggleButton>
+//               <ToggleButton value="stacked">
+//                 <StackedBarChartIcon fontSize="small" />
+//               </ToggleButton>
+//             </ToggleButtonGroup>
+//           </Stack>
+//         </Stack>
+
+//         <ReactECharts option={option} style={{ height: 420 }} />
+//       </Paper>
+//     </>
+//   );
+// };
+
+// export default CostExplorer;
+
+import React, { useState, useRef } from "react";
 import ReactECharts from "echarts-for-react";
 import {
   Box,
@@ -7,32 +187,44 @@ import {
   Button,
   Stack,
   Switch,
-  Tabs,
-  Tab,
   Menu,
   MenuItem,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Popper,
 } from "@mui/material";
+import BarChartIcon from "@mui/icons-material/BarChart";
+import ShowChartIcon from "@mui/icons-material/ShowChart";
+import StackedBarChartIcon from "@mui/icons-material/StackedBarChart";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { StaticDatePicker } from "@mui/x-date-pickers/StaticDatePicker";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs from "dayjs";
 
 const CostExplorer = () => {
   const [tab, setTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
 
-  const handleMoreClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
+  const [startDate, setStartDate] = useState(dayjs("2025-06-01"));
+  const [endDate, setEndDate] = useState(dayjs("2025-11-30"));
 
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+  const [interval, setInterval] = useState("monthly");
+  const [chartType, setChartType] = useState("grouped");
+
+  const [open, setOpen] = useState(false);
+  const rangeRef = useRef(null);
+
+  const handleMoreClick = (e) => setAnchorEl(e.currentTarget);
+  const handleClose = () => setAnchorEl(null);
 
   const activeBtnStyle = {
     bgcolor: "primary.main",
     color: "#fff",
-    "&:hover": {
-      bgcolor: "primary.dark",
-    },
+    "&:hover": { bgcolor: "primary.dark" },
   };
 
   const inactiveBtnStyle = {
@@ -40,18 +232,27 @@ const CostExplorer = () => {
     borderColor: "primary.main",
   };
 
+  const baseSeries = [
+    { name: "AWS Service", data: [36000, 40000, 35000, 37000, 33000, 31000] },
+    {
+      name: "Amazon Appstore",
+      data: [25000, 24000, 26000, 24000, 23500, 22000],
+    },
+    { name: "CK Discount", data: [5000, 6000, 4500, 5200, 4800, 5100] },
+  ];
+
+  const getSeries = () => {
+    if (chartType === "line")
+      return baseSeries.map((s) => ({ ...s, type: "line", smooth: true }));
+    if (chartType === "stacked")
+      return baseSeries.map((s) => ({ ...s, type: "bar", stack: "total" }));
+    return baseSeries.map((s) => ({ ...s, type: "bar" }));
+  };
+
   const option = {
     tooltip: { trigger: "axis" },
-    legend: {
-      bottom: 0,
-      type: "scroll",
-    },
-    grid: {
-      left: "3%",
-      right: "3%",
-      bottom: "18%",
-      containLabel: true,
-    },
+    legend: { bottom: 0 },
+    grid: { left: "3%", right: "3%", bottom: "18%", containLabel: true },
     xAxis: {
       type: "category",
       data: [
@@ -63,31 +264,44 @@ const CostExplorer = () => {
         "Nov 2025",
       ],
     },
-    yAxis: {
-      type: "value",
-      name: "Cost ($)",
-    },
-    series: [
-      {
-        name: "AWS Service",
-        type: "bar",
-        data: [36000, 40000, 35000, 37000, 33000, 31000],
-      },
-      {
-        name: "Amazon Appstore",
-        type: "bar",
-        data: [25000, 24000, 26000, 24000, 23500, 22000],
-      },
-      {
-        name: "CK Discount",
-        type: "bar",
-        data: [5000, 6000, 4500, 5200, 4800, 5100],
-      },
-    ],
+    yAxis: { type: "value", name: "Cost ($)" },
+    series: getSeries(),
   };
 
   return (
     <>
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <Popper
+          open={open}
+          anchorEl={rangeRef.current}
+          placement="bottom-start"
+        >
+          <Paper sx={{ p: 2 }}>
+            <Stack direction="row" spacing={2}>
+              <StaticDatePicker
+                displayStaticWrapperAs="desktop"
+                value={startDate}
+                onChange={(v) => setStartDate(v)}
+              />
+              <StaticDatePicker
+                displayStaticWrapperAs="desktop"
+                value={endDate}
+                onChange={(v) => setEndDate(v)}
+              />
+            </Stack>
+            <Stack direction="row" justifyContent="flex-end" mt={1}>
+              <Button
+                size="small"
+                variant="contained"
+                onClick={() => setOpen(false)}
+              >
+                Done
+              </Button>
+            </Stack>
+          </Paper>
+        </Popper>
+      </LocalizationProvider>
+
       <Box sx={{ mb: 2 }}>
         <Stack
           direction="row"
@@ -95,176 +309,172 @@ const CostExplorer = () => {
           alignItems="center"
         >
           <Box>
-            <Typography variant="h5" fontWeight={600} mt={1}>
+            <Typography variant="h5" fontWeight={600}>
               Cost Explorer
             </Typography>
-
-            <Typography
-              sx={{
-                mt: 1,
-                mb: 1,
-                display: "inline-block",
-                borderRadius: "20px",
-                fontSize: "14px",
-                color: (theme) => theme.palette.text.primary,
-              }}
-            >
+            <Typography fontSize={14}>
               How to always be aware of cost changes and history.
             </Typography>
           </Box>
-
           <Button variant="contained">Recent Reports</Button>
         </Stack>
       </Box>
 
-      <Box sx={{ width: "98%" }}>
-        <Paper sx={{ p: 2, width: "100%", overflowX: "hidden" }}>
-          <Box
-            sx={{
-              mt: 2,
-              p: 1,
-              border: "1px solid",
-              borderColor: "divider",
-              borderRadius: "6px",
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              flexWrap: "wrap",
-            }}
+      <Paper sx={{ p: 2 }}>
+        <Box
+          sx={{
+            p: 1,
+            border: "1px solid",
+            borderColor: "divider",
+            borderRadius: "6px",
+            display: "flex",
+            gap: 1,
+            flexWrap: "wrap",
+            alignItems: "center",
+            mb: 2,
+          }}
+        >
+          <Typography fontWeight={600} sx={{ color: "grey" }}>
+            Group By:
+          </Typography>
+
+          {[
+            "Service",
+            "Instance Type",
+            "Account ID",
+            "Usage Type",
+            "Platform",
+            "Region",
+          ].map((label, index) => (
+            <Button
+              key={label}
+              size="small"
+              variant={tab === index ? "contained" : "outlined"}
+              sx={tab === index ? activeBtnStyle : inactiveBtnStyle}
+              onClick={() => setTab(index)}
+            >
+              {label}
+            </Button>
+          ))}
+
+          <Button
+            size="small"
+            variant="text"
+            onClick={handleMoreClick}
+            endIcon={
+              anchorEl ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />
+            }
           >
-            <Typography fontWeight={600} sx={{ color: "grey" }}>
-              Group By:
-            </Typography>
+            More
+          </Button>
 
-            <Button
-              size="small"
-              variant={tab === 0 ? "contained" : "outlined"}
-              sx={tab === 0 ? activeBtnStyle : inactiveBtnStyle}
-              onClick={() => setTab(0)}
-            >
-              Service
-            </Button>
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleClose}
+          >
+            <MenuItem onClick={handleClose}>Usage Type Group</MenuItem>
+            <MenuItem onClick={handleClose}>Purchase Option</MenuItem>
+            <MenuItem onClick={handleClose}>Resource</MenuItem>
+            <MenuItem onClick={handleClose}>Charge Type</MenuItem>
+            <MenuItem onClick={handleClose}>Availability Zone</MenuItem>
+            <MenuItem onClick={handleClose}>Tenancy</MenuItem>
+            <MenuItem onClick={handleClose}>Legal Entity</MenuItem>
+            <MenuItem onClick={handleClose}>Billing Entity</MenuItem>
+          </Menu>
+        </Box>
 
-            <Button
-              size="small"
-              variant={tab === 1 ? "contained" : "outlined"}
-              sx={tab === 1 ? activeBtnStyle : inactiveBtnStyle}
-              onClick={() => setTab(1)}
-            >
-              Instance Type
-            </Button>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+        >
+          <Typography variant="body2">Costs ($)</Typography>
 
-            <Button
+          <Stack direction="row" spacing={1} alignItems="center">
+            <TextField
+              ref={rangeRef}
               size="small"
-              variant={tab === 2 ? "contained" : "outlined"}
-              sx={tab === 2 ? activeBtnStyle : inactiveBtnStyle}
-              onClick={() => setTab(2)}
-            >
-              Account ID
-            </Button>
+              sx={{ width: 230, cursor: "pointer" }}
+              value={`${startDate.format("DD-MMM-YYYY")} – ${endDate.format(
+                "DD-MMM-YYYY"
+              )}`}
+              InputProps={{ readOnly: true }}
+              onClick={() => setOpen(true)}
+            />
 
-            <Button
+            <ToggleButtonGroup
               size="small"
-              variant={tab === 3 ? "contained" : "outlined"}
-              sx={tab === 3 ? activeBtnStyle : inactiveBtnStyle}
-              onClick={() => setTab(3)}
-            >
-              Usage Type
-            </Button>
-
-            <Button
-              size="small"
-              variant={tab === 4 ? "contained" : "outlined"}
-              sx={tab === 4 ? activeBtnStyle : inactiveBtnStyle}
-              onClick={() => setTab(4)}
-            >
-              Platform
-            </Button>
-
-            <Button
-              size="small"
-              variant={tab === 5 ? "contained" : "outlined"}
-              sx={tab === 5 ? activeBtnStyle : inactiveBtnStyle}
-              onClick={() => setTab(5)}
-            >
-              Region
-            </Button>
-
-            <Button
-              size="small"
-              variant="text"
-              onClick={handleMoreClick}
-              endIcon={
-                anchorEl ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />
-              }
+              exclusive
+              value={interval}
+              onChange={(e, v) => v && setInterval(v)}
               sx={{
-                color: "primary.main",
-                textTransform: "none",
-                minHeight: "32px",
-                "&:hover": {
-                  backgroundColor: "action.hover",
+                height: 28,
+                "& .MuiToggleButton-root": {
+                  minHeight: 28,
+                  px: 1.5,
+                  fontSize: 12,
+                  textTransform: "none",
+                  color: "primary.main",
+                  borderColor: "primary.main",
+                },
+                "& .MuiToggleButton-root.Mui-selected": {
+                  backgroundColor: "primary.main",
+                  color: "#fff",
+                  "&:hover": {
+                    backgroundColor: "primary.dark",
+                  },
                 },
               }}
             >
-              More
-            </Button>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleClose}
+              <ToggleButton value="daily">Daily</ToggleButton>
+              <ToggleButton value="monthly">Monthly</ToggleButton>
+            </ToggleButtonGroup>
+
+            <ToggleButtonGroup
+              size="small"
+              exclusive
+              value={chartType}
+              onChange={(e, v) => v && setChartType(v)}
+              sx={{
+                height: 28,
+                "& .MuiToggleButton-root": {
+                  minHeight: 28,
+                  px: 1.5,
+                  fontSize: 12,
+                  textTransform: "none",
+                  color: "primary.main",
+                  borderColor: "primary.main",
+                },
+                "& .MuiToggleButton-root.Mui-selected": {
+                  backgroundColor: "primary.main",
+                  color: "#fff",
+                  "&:hover": {
+                    backgroundColor: "primary.dark",
+                  },
+                },
+              }}
             >
-              <MenuItem onClick={handleClose}>Usage Type Group</MenuItem>
-              <MenuItem onClick={handleClose}>Purchase Option</MenuItem>
-              <MenuItem onClick={handleClose}>Resource</MenuItem>
-              <MenuItem onClick={handleClose}>Charge Type</MenuItem>
-              <MenuItem onClick={handleClose}>Availability Zone</MenuItem>
-              <MenuItem onClick={handleClose}>Tenancy</MenuItem>
-              <MenuItem onClick={handleClose}>Legal Entity</MenuItem>
-              <MenuItem onClick={handleClose}>Billing Entity</MenuItem>
-            </Menu>
-          </Box>
-
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            mt={2}
-          >
-            <Typography variant="body2">Costs ($)</Typography>
-
-            <Stack direction="row" spacing={1} flexWrap="wrap">
-              <Button size="small" variant="outlined">
-                01-Jun-2025 – 30-Nov-2025
-              </Button>
-              <Button size="small" variant="outlined">
-                Daily
-              </Button>
-              <Button size="small" variant="contained">
-                Monthly
-              </Button>
-              <Button size="small" variant="outlined">
-                📊
-              </Button>
-              <Button size="small" variant="outlined">
-                📋
-              </Button>
-            </Stack>
+              <ToggleButton value="grouped">
+                <BarChartIcon fontSize="small" />
+              </ToggleButton>
+              <ToggleButton value="line">
+                <ShowChartIcon fontSize="small" />
+              </ToggleButton>
+              <ToggleButton value="stacked">
+                <StackedBarChartIcon fontSize="small" />
+              </ToggleButton>
+            </ToggleButtonGroup>
           </Stack>
+        </Stack>
 
-          <Stack direction="row" justifyContent="flex-end" mt={1} mb={2}>
-            <Typography variant="body2">Include Negative Value</Typography>
-            <Switch size="small" />
-          </Stack>
+        <Stack direction="row" justifyContent="flex-end" mt={1} mb={2}>
+          <Typography variant="body2">Include Negative Value</Typography>
+          <Switch size="small" />
+        </Stack>
 
-          <Box sx={{ width: "100%", overflowX: "hidden" }}>
-            <ReactECharts
-              option={option}
-              style={{ height: 420, width: "100%" }}
-              opts={{ renderer: "canvas" }}
-            />
-          </Box>
-        </Paper>
-      </Box>
+        <ReactECharts option={option} style={{ height: 420 }} />
+      </Paper>
     </>
   );
 };
