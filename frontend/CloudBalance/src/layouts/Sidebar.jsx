@@ -5,9 +5,11 @@ import {
   ListItemIcon,
   ListItemText,
   Toolbar,
+  Box,
+  Divider,
 } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
-import { FaUsers } from "react-icons/fa";
+import { FaUsers, FaPhoneAlt } from "react-icons/fa";
 import { BsGraphUpArrow } from "react-icons/bs";
 import { MdDashboard } from "react-icons/md";
 import { LuLayoutDashboard } from "react-icons/lu";
@@ -45,10 +47,9 @@ export default function Sidebar() {
     },
   ];
 
-  const isActive = (path) =>
-    path === "/dashboard/users"
-      ? location.pathname.startsWith("/dashboard/users")
-      : location.pathname === path;
+  const isActive = (path) => {
+    return location.pathname.startsWith(path);
+  };
 
   return (
     <Drawer
@@ -62,12 +63,14 @@ export default function Sidebar() {
           boxSizing: "border-box",
           borderRight: "1px solid #ddd",
           paddingTop: "30px",
+          display: "flex",
+          flexDirection: "column",
         },
       }}
     >
       <Toolbar />
 
-      <List sx={{ mt: 1 }}>
+      <List sx={{ mt: 1, flexGrow: 1 }}>
         {menuItems.map((item) => {
           const active = isActive(item.path);
 
@@ -110,6 +113,41 @@ export default function Sidebar() {
           );
         })}
       </List>
+
+      <Divider />
+
+      <Box sx={{ p: 1.5 }}>
+        <ListItemButton
+          sx={{
+            borderRadius: "8px",
+            justifyContent: open ? "flex-start" : "center",
+            bgcolor: "#f5f7fa",
+            "&:hover": {
+              bgcolor: "#e3f2fd",
+            },
+          }}
+        >
+          <ListItemIcon
+            sx={{
+              minWidth: open ? 35 : 0,
+              justifyContent: "center",
+              color: "#1976d2",
+            }}
+          >
+            <FaPhoneAlt size={18} />
+          </ListItemIcon>
+
+          {open && (
+            <ListItemText
+              primary="Contact"
+              primaryTypographyProps={{
+                fontWeight: 600,
+                color: "#1976d2",
+              }}
+            />
+          )}
+        </ListItemButton>
+      </Box>
     </Drawer>
   );
 }

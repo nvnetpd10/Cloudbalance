@@ -32,22 +32,29 @@ export default function AddUser() {
       axios
         .get(`http://localhost:8080/users/getUsers`)
         .then((res) => {
-          const user = res.data.find((u) => u.id == id);
+          const user = res.data.find((u) => String(u.id) === String(id));
+
           if (user) {
             setForm({
-              firstName: user.firstName,
-              lastName: user.lastName,
-              email: user.email,
-              role: user.role,
+              firstName: user.firstName || "",
+              lastName: user.lastName || "",
+              email: user.email || "",
+              role: user.role || "",
             });
+          } else {
+            console.log("User not found with ID:", id);
           }
         })
-        .catch((err) => console.error(err));
+        .catch((err) => {
+          console.error("Error fetching user:", err);
+        });
     }
   }, [isEdit, id]);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    setForm({ ...form, [name]: value });
   };
 
   const handleSubmit = async () => {

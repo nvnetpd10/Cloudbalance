@@ -1,5 +1,5 @@
 import { createContext, useContext, useState } from "react";
-import { Box, Toolbar } from "@mui/material";
+import { Box, Toolbar, Typography } from "@mui/material";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 import { Outlet } from "react-router-dom";
@@ -14,7 +14,7 @@ export default function Layout() {
 
   return (
     <SidebarContext.Provider value={{ open, toggleSidebar }}>
-      <Box sx={{ display: "flex", height: "100vh", pt: "1rem" }}>
+      <Box sx={{ display: "flex", height: "97vh" }}>
         <Sidebar />
 
         <Box sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
@@ -31,6 +31,25 @@ export default function Layout() {
             }}
           >
             <Outlet context={{ open }} />
+          </Box>
+
+          <Box
+            sx={{
+              height: "34px",
+              borderTop: "1px solid #ddd",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "#fff",
+              pt: "0.8rem",
+            }}
+          >
+            <Typography
+              variant="body2"
+              sx={{ fontWeight: 500, color: "#1976d2" }}
+            >
+              Cloudkeeper 2025 | All Rights Reserved
+            </Typography>
           </Box>
         </Box>
       </Box>
