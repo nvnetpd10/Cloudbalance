@@ -27,7 +27,6 @@ const AwsDashboard = () => {
         {value === 0 && <EC2Table />}
         {value === 1 && <RDSTable />}
         {value === 2 && <AGSTable />}
-        {/* comment */}
       </Box>
     </Box>
   );

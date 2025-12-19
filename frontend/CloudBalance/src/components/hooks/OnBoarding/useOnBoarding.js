@@ -3,7 +3,7 @@ import axios from "axios";
 
 export default function useOnBoarding() {
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [lloading, setLloading] = useState(true);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -15,15 +15,15 @@ export default function useOnBoarding() {
         );
 
         setUsers(res.data);
-        setLoading(false);
+        setLloading(false);
       } catch (error) {
         console.error("API Error:", error);
-        setLoading(false);
+        setLloading(false);
       }
     };
 
     fetchUsers();
   }, []);
 
-  return { users, loading };
+  return { users, lloading };
 }

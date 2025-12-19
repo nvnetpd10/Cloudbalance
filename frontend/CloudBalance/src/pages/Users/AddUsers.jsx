@@ -186,8 +186,8 @@ export default function AddUser() {
             sx={{ maxWidth: "380px" }}
           >
             <MenuItem value="admin">Admin</MenuItem>
-            <MenuItem value="manager">Manager</MenuItem>
-            <MenuItem value="user">User</MenuItem>
+            <MenuItem value="manager">ReadOnly</MenuItem>
+            <MenuItem value="user">Customer</MenuItem>
           </TextField>
 
           <TextField

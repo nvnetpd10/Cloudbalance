@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import {
   Paper,
   Button,
@@ -17,13 +16,20 @@ import { useNavigate } from "react-router-dom";
 import DataTable from "../../components/common/DataTable";
 import Pagination from "../../components/common/DataPagination";
 import FullScreenLoader from "../../components/common/FullScreenLoader";
+import useOnBoarding from "../../components/hooks/OnBoarding/useOnBoarding";
 
 export default function Onboarding() {
   const navigate = useNavigate();
 
-  const [accounts, setAccounts] = useState([]);
+  const { users: accounts, lloading } = useOnBoarding();
+
   const [pagedAccounts, setPagedAccounts] = useState([]);
-  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (accounts.length) {
+      setPagedAccounts(accounts.slice(0, 5));
+    }
+  }, [accounts]);
 
   const [toggleDialog, setToggleDialog] = useState({
     open: false,
@@ -31,37 +37,13 @@ export default function Onboarding() {
     newState: null,
   });
 
-  useEffect(() => {
-    const fetchAccounts = async () => {
-      try {
-        await new Promise((res) => setTimeout(res, 1000));
-        const res = await axios.get(
-          "https://mocki.io/v1/9c33ce58-d41a-4161-9c9a-356fface37d5"
-        );
-        setAccounts(res.data);
-        setPagedAccounts(res.data.slice(0, 5));
-        setLoading(false);
-      } catch (error) {
-        setLoading(false);
-      }
-    };
-    fetchAccounts();
-  }, []);
-
-  const handleSchedulerToggle = (accountId, currentState) => {
-    setToggleDialog({
-      open: true,
-      accountId,
-      newState: !currentState,
-    });
-  };
-
   const handleConfirmToggle = () => {
     const { accountId, newState } = toggleDialog;
-    const updated = pagedAccounts.map((acc) =>
-      acc.accountId === accountId ? { ...acc, scheduler: newState } : acc
+    setPagedAccounts((prev) =>
+      prev.map((acc) =>
+        acc.accountId === accountId ? { ...acc, scheduler: newState } : acc
+      )
     );
-    setPagedAccounts(updated);
     setToggleDialog({ open: false, accountId: null, newState: null });
   };
 
@@ -75,7 +57,6 @@ export default function Onboarding() {
     {
       name: "Account ID",
       key: "accountId",
-      sortable: true,
       formatter: (row) => (
         <Box>
           <div style={{ fontWeight: 600 }}>
@@ -123,7 +104,13 @@ export default function Onboarding() {
         <Switch
           checked={row.scheduler}
           size="small"
-          onChange={() => handleSchedulerToggle(row.accountId, row.scheduler)}
+          onChange={() =>
+            setToggleDialog({
+              open: true,
+              accountId: row.accountId,
+              newState: !row.scheduler,
+            })
+          }
         />
       ),
     },
@@ -152,6 +139,7 @@ export default function Onboarding() {
           Accounts
         </Typography>
       </Box>
+
       <Paper
         elevation={2}
         sx={{
@@ -173,14 +161,16 @@ export default function Onboarding() {
       </Paper>
 
       <Box sx={{ position: "relative", minHeight: "400px" }}>
-        {loading ? (
+        {lloading ? (
           <FullScreenLoader />
         ) : (
-          <DataTable columns={columns} rows={pagedAccounts} />
-        )}
-
-        {!loading && (
-          <Pagination total={accounts.length} onPageChange={handlePageChange} />
+          <>
+            <DataTable columns={columns} rows={pagedAccounts} />
+            <Pagination
+              total={accounts.length}
+              onPageChange={handlePageChange}
+            />
+          </>
         )}
       </Box>
 
