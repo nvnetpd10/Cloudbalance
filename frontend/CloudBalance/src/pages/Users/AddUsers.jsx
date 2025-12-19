@@ -31,7 +31,7 @@ export default function AddUser() {
   useEffect(() => {
     if (isEdit) {
       axios
-        .get(`http://localhost:8080/users/getUsers`)
+        .get(`http://localhost:8080/users`)
         .then((res) => {
           const user = res.data.find((u) => String(u.id) === String(id));
 
@@ -187,7 +187,7 @@ export default function AddUser() {
           >
             <MenuItem value="admin">Admin</MenuItem>
             <MenuItem value="manager">ReadOnly</MenuItem>
-            <MenuItem value="user">Customer</MenuItem>
+            <MenuItem value="Customer">Customer</MenuItem>
           </TextField>
 
           <TextField
