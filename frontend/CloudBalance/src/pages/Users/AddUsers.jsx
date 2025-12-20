@@ -78,7 +78,6 @@ export default function AddUser() {
     }
 
     setErrors(newErrors);
-
     if (Object.keys(newErrors).length > 0) return;
 
     try {
@@ -99,7 +98,16 @@ export default function AddUser() {
 
       navigate("/dashboard/users");
     } catch (error) {
-      console.error("Error:", error.response?.data || error);
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message === "USER_EMAIL_EXISTS"
+      ) {
+        setErrors({ email: "User with this email already exists" });
+        return;
+      }
+
+      console.error("Error:", error);
     }
   };
 

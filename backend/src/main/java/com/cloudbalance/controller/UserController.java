@@ -16,17 +16,21 @@ public class UserController {
 
     private final UserService userService;
 
-
     @GetMapping
     public List<UserResponseDTO> getUsers(){
         return userService.getUsers();
+    }
+
+    @GetMapping("/{id}")
+    public UserResponseDTO getUserById(@PathVariable Long id) {
+        return userService.getUserById(id);
     }
 
     @PostMapping("")
     public UserResponseDTO addUser(
             @Valid @RequestBody UserRequestDTO userRequestDTO
     ) {
-        return userService.addUsers(userRequestDTO);
+        return userService.addUser(userRequestDTO);
     }
 
     @PutMapping("/{id}")
@@ -34,7 +38,18 @@ public class UserController {
             @PathVariable Long id,
             @Valid @RequestBody UserRequestDTO dto
     ) {
-        return userService.updateUsers(id, dto);
+        return userService.updateUser(id, dto);
+    }
+    @PatchMapping("/{id}")
+    public UserResponseDTO patchUser(
+            @PathVariable Long id,
+            @RequestBody UserRequestDTO dto
+    ) {
+        return userService.patchUser(id, dto);
+    }
+    @DeleteMapping("/{id}")
+    public void deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
     }
 }
 
