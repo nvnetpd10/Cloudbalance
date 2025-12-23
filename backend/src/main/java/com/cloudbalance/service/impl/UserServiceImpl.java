@@ -6,6 +6,8 @@ import com.cloudbalance.entity.UserEntity;
 import com.cloudbalance.mapper.UserMapper;
 import com.cloudbalance.repository.UserRepository;
 import com.cloudbalance.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,7 +15,11 @@ import java.util.List;
 @Service
 public class UserServiceImpl implements UserService {
 
+    @Autowired
     private final UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -29,72 +35,98 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDTO addUser(UserRequestDTO dto) {
-
+        // Check if the email already exists
         if (userRepository.existsByEmail(dto.getEmail())) {
-            throw new RuntimeException("USER_EMAIL_EXISTS");
+            throw new RuntimeException("Email already exists.");
         }
 
+        // Convert DTO to entity and encode the password
         UserEntity user = UserMapper.toEntity(dto);
-        return UserMapper.toResponseDTO(userRepository.save(user));
+        user.setPassword(passwordEncoder.encode(dto.getPassword())); // Encode password before saving
+
+        // Save the user and return the response DTO
+        UserEntity savedUser = userRepository.save(user);
+        return UserMapper.toResponseDTO(savedUser);
     }
 
     @Override
     public UserResponseDTO updateUser(Long id, UserRequestDTO dto) {
+        // Find the existing user or throw exception if not found
+        UserEntity existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found."));
 
-        UserEntity existing = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
+        // Check if the email is already taken by another user
         userRepository.findByEmail(dto.getEmail())
                 .filter(u -> !u.getId().equals(id))
                 .ifPresent(u -> {
-                    throw new RuntimeException("USER_EMAIL_EXISTS");
+                    throw new RuntimeException("Email already exists.");
                 });
 
-        existing.setFirstName(dto.getFirstName());
-        existing.setLastName(dto.getLastName());
-        existing.setEmail(dto.getEmail());
-        existing.setRole(dto.getRole());
-        existing.setPassword(dto.getPassword());
+        // Update user details
+        existingUser.setFirstName(dto.getFirstName());
+        existingUser.setLastName(dto.getLastName());
+        existingUser.setEmail(dto.getEmail());
+        existingUser.setRole(dto.getRole());
 
-        return UserMapper.toResponseDTO(userRepository.save(existing));
+        // Update password if provided
+        if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
+            existingUser.setPassword(passwordEncoder.encode(dto.getPassword()));
+        }
+
+        // Save and return the updated user
+        UserEntity updatedUser = userRepository.save(existingUser);
+        return UserMapper.toResponseDTO(updatedUser);
     }
 
     @Override
-    public UserResponseDTO getUserById(Long id){
-        UserEntity user = userRepository.findById(id).orElseThrow(() ->
-                new RuntimeException("User not found"));
+    public UserResponseDTO getUserById(Long id) {
+        // Find the user by id or throw exception if not found
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found."));
         return UserMapper.toResponseDTO(user);
     }
 
     @Override
-    public UserResponseDTO patchUser(Long id , UserRequestDTO dto){
-        UserEntity user = userRepository.findById(id).orElseThrow(() ->
-                new RuntimeException("User not found"));
-        if(dto.getFirstName() != null){
+    public UserResponseDTO patchUser(Long id, UserRequestDTO dto) {
+        // Find the user by id or throw exception if not found
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found."));
+
+        // Update only the non-null fields in the DTO
+        if (dto.getFirstName() != null) {
             user.setFirstName(dto.getFirstName());
         }
-        if(dto.getLastName() != null){
+        if (dto.getLastName() != null) {
             user.setLastName(dto.getLastName());
         }
-        if(dto.getEmail() != null){
+        if (dto.getEmail() != null) {
+            // Check if the email is already taken by another user
+            userRepository.findByEmail(dto.getEmail())
+                    .filter(u -> !u.getId().equals(id))
+                    .ifPresent(u -> {
+                        throw new RuntimeException("Email already exists.");
+                    });
             user.setEmail(dto.getEmail());
         }
-        if (dto.getRole() != null){
+        if (dto.getRole() != null) {
             user.setRole(dto.getRole());
         }
-        if (dto.getPassword() != null){
-            user.setPassword(dto.getPassword());
+        if (dto.getPassword() != null) {
+            user.setPassword(passwordEncoder.encode(dto.getPassword()));
         }
-        return UserMapper.toResponseDTO(userRepository.save(user));
+
+        // Save and return the updated user
+        UserEntity updatedUser = userRepository.save(user);
+        return UserMapper.toResponseDTO(updatedUser);
     }
+
     @Override
     public void deleteUser(Long id) {
+        // Check if user exists, otherwise throw exception
         if (!userRepository.existsById(id)) {
-            throw new RuntimeException("User not found");
+            throw new RuntimeException("User not found.");
         }
+        // Delete the user
         userRepository.deleteById(id);
     }
 }
-
-
-

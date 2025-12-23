@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { getToken, logout } from "../../../utils/auth";
 
 export default function useUsers() {
   const [users, setUsers] = useState([]);
@@ -8,9 +9,17 @@ export default function useUsers() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        await new Promise((res) => setTimeout(res, 1000));
+        const token = getToken();
+        if (!token) {
+          logout();
+          return;
+        }
 
-        const res = await axios.get("http://localhost:8080/users");
+        const res = await axios.get("http://localhost:8080/users", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         setUsers(res.data);
         setLoading(false);

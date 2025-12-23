@@ -1,15 +1,9 @@
 import { useState, useEffect } from "react";
-import {
-  Box,
-  TextField,
-  Button,
-  Typography,
-  Paper,
-  Avatar,
-} from "@mui/material";
+import { Box, TextField, Button, Paper, Avatar } from "@mui/material";
 import { login, isLoggedIn } from "../../utils/auth";
 import { useNavigate } from "react-router-dom";
 import Logo from "../../assets/images/CloudKeeper_Logo.jpg";
+import axios from "axios";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -44,7 +38,7 @@ export default function Login() {
     return "";
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     const emailErr = validateEmail(email);
     const passwordErr = validatePassword(password);
 
@@ -53,8 +47,28 @@ export default function Login() {
 
     if (emailErr || passwordErr) return;
 
-    login(email);
-    navigate("/dashboard/users");
+    try {
+      const response = await axios.post(
+        "http://localhost:8080/auth/login",
+        { email, password }
+      );
+
+      const token = response.data.token;
+
+      if (!token) {
+        alert("Login failed: token not received");
+        return;
+      }
+
+      // Store token in localStorage
+      localStorage.setItem("token", token);
+      
+      login(email, token);
+      navigate("/dashboard/users");
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Login failed. Check email and password.");
+    }
   };
 
   return (

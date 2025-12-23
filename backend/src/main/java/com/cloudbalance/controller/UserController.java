@@ -8,31 +8,36 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
 @RestController
 @RequestMapping("/users")
-@CrossOrigin(origins="*")
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
 
+    // Get all users
     @GetMapping
-    public List<UserResponseDTO> getUsers(){
+    public List<UserResponseDTO> getUsers() {
         return userService.getUsers();
     }
 
+    // Get a user by ID
     @GetMapping("/{id}")
     public UserResponseDTO getUserById(@PathVariable Long id) {
         return userService.getUserById(id);
     }
 
-    @PostMapping("")
+    // Add a new user
+    @PostMapping
     public UserResponseDTO addUser(
             @Valid @RequestBody UserRequestDTO userRequestDTO
     ) {
         return userService.addUser(userRequestDTO);
     }
 
+    // Update an existing user (full update)
     @PutMapping("/{id}")
     public UserResponseDTO updateUser(
             @PathVariable Long id,
@@ -40,16 +45,4 @@ public class UserController {
     ) {
         return userService.updateUser(id, dto);
     }
-    @PatchMapping("/{id}")
-    public UserResponseDTO patchUser(
-            @PathVariable Long id,
-            @RequestBody UserRequestDTO dto
-    ) {
-        return userService.patchUser(id, dto);
-    }
-    @DeleteMapping("/{id}")
-    public void deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
-    }
 }
-

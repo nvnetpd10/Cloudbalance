@@ -1,15 +1,16 @@
-import {
-  Box,
-  TextField,
-  Button,
-  Typography,
-  Paper,
-  MenuItem,
-} from "@mui/material";
-import { useNavigate, useOutletContext, useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate, useOutletContext } from "react-router-dom";
 import axios from "axios";
 import useUserActions from "../../components/hooks/Users/useUserActions";
+import { getToken } from "../../utils/auth";
+import {
+  Box,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  MenuItem,
+} from "@mui/material";
 
 export default function AddUser() {
   const { open } = useOutletContext();
@@ -17,6 +18,7 @@ export default function AddUser() {
   const navigate = useNavigate();
   const { addUser, updateUser } = useUserActions();
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const isEdit = Boolean(id);
 
@@ -29,31 +31,73 @@ export default function AddUser() {
   });
 
   useEffect(() => {
-    if (isEdit) {
-      axios
-        .get(`http://localhost:8080/users`)
-        .then((res) => {
-          const user = res.data.find((u) => String(u.id) === String(id));
+    console.log("🔍 useEffect triggered");
+    console.log("📝 isEdit:", isEdit);
+    console.log("🆔 User ID:", id);
 
-          if (user) {
-            setForm({
-              firstName: user.firstName || "",
-              lastName: user.lastName || "",
-              email: user.email || "",
-              role: user.role || "",
-              password: user.password || "",
-            });
-          }
+    if (isEdit) {
+      const token = getToken();
+      console.log("🔑 Token:", token ? "EXISTS" : "MISSING");
+
+      if (!token) {
+        console.error("❌ No token found!");
+        alert("Session expired. Please login again.");
+        localStorage.removeItem("token");
+        navigate("/login");
+        return;
+      }
+
+      setLoading(true);
+      console.log("🌐 Fetching user with ID:", id);
+
+      axios
+        .get(`http://localhost:8080/users/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        .then((res) => {
+          console.log("✅ User data received:", res.data);
+          setForm({
+            firstName: res.data.firstName || "",
+            lastName: res.data.lastName || "",
+            email: res.data.email || "",
+            role: res.data.role || "",
+            password: "",
+          });
+          setLoading(false);
         })
         .catch((err) => {
-          console.error("Error fetching user:", err);
+          console.error("❌ Error fetching user:", err);
+          console.error("❌ Error response:", err.response);
+          console.error("❌ Error status:", err.response?.status);
+          console.error("❌ Error data:", err.response?.data);
+
+          setLoading(false);
+
+          if (err.response?.status === 404) {
+            alert("User not found");
+            navigate("/dashboard/users");
+          } else if (
+            err.response?.status === 401 ||
+            err.response?.status === 403
+          ) {
+            alert("Session expired. Please login again.");
+            localStorage.removeItem("token");
+            navigate("/login");
+          } else {
+            alert("Failed to load user data. Check console for details.");
+          }
         });
     }
-  }, [isEdit, id]);
+  }, [isEdit, id, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: "" });
+    }
   };
 
   const isValidPassword = (password) => {
@@ -70,46 +114,95 @@ export default function AddUser() {
     if (!form.email.trim()) newErrors.email = "Email is required";
     if (!form.role.trim()) newErrors.role = "Role is required";
 
-    if (!form.password.trim()) {
-      newErrors.password = "Password is required";
-    } else if (!isValidPassword(form.password)) {
-      newErrors.password =
-        "Min 5 chars, 1 letter, 1 number & 1 special character required";
+    // ✅ Password validation logic fixed
+    if (!isEdit) {
+      // ADD MODE: Password is required
+      if (!form.password.trim()) {
+        newErrors.password = "Password is required";
+      } else if (!isValidPassword(form.password)) {
+        newErrors.password =
+          "Min 5 chars, 1 letter, 1 number & 1 special character required";
+      }
+    } else {
+      // EDIT MODE: Password is optional, but if provided, must be valid
+      if (form.password.trim() && !isValidPassword(form.password)) {
+        newErrors.password =
+          "Min 5 chars, 1 letter, 1 number & 1 special character required";
+      }
+      // ✅ If password is empty in edit mode, that's OK - no error
     }
 
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
-    try {
-      const payload = {
-        firstName: form.firstName,
-        lastName: form.lastName,
-        email: form.email,
-        role: form.role,
-        password: form.password,
-        active: true,
-      };
+    const payload = {
+      firstName: form.firstName,
+      lastName: form.lastName,
+      email: form.email,
+      role: form.role,
+      active: true,
+    };
 
+    // ✅ Only include password in payload if user entered one
+    if (!isEdit) {
+      // ADD MODE: Always include password
+      payload.password = form.password;
+    } else if (form.password.trim()) {
+      // EDIT MODE: Only include password if user provided a new one
+      payload.password = form.password;
+    }
+
+    console.log("📤 Submitting payload:", payload);
+
+    try {
       if (isEdit) {
+        console.log("🔄 Updating user with ID:", id);
         await updateUser(id, payload);
       } else {
+        console.log("➕ Adding new user");
         await addUser(payload);
       }
-
       navigate("/dashboard/users");
     } catch (error) {
-      if (
-        error.response &&
-        error.response.data &&
-        error.response.data.message === "USER_EMAIL_EXISTS"
-      ) {
-        setErrors({ email: "User with this email already exists" });
-        return;
-      }
+      console.error("❌ Submit Error:", error);
 
-      console.error("Error:", error);
+      if (error.message === "No token found") {
+        alert("Session expired. Please login again.");
+        navigate("/login");
+      } else if (error.response) {
+        const msg = error.response.data?.message || error.response.data;
+        if (error.response.status === 401) {
+          alert("Session expired. Please login again.");
+          localStorage.removeItem("token");
+          navigate("/login");
+        } else if (error.response.status === 409) {
+          setErrors({ email: "User with this email already exists" });
+        } else if (error.response.status === 400) {
+          setErrors({ general: "Invalid input. Please check all fields." });
+        } else {
+          setErrors({ general: msg || "Failed to save user." });
+        }
+      } else {
+        setErrors({ general: "Network error. Please check your connection." });
+      }
     }
   };
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          width: "96%",
+          p: 3,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "400px",
+        }}
+      >
+        <Typography variant="h6">Loading user data...</Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box
@@ -135,6 +228,12 @@ export default function AddUser() {
         <Typography variant="h5" mb={3} fontWeight="bold" color="#1976d2">
           {isEdit ? "Edit User" : "Add New User"}
         </Typography>
+
+        {errors.general && (
+          <Typography color="error" mb={2}>
+            {errors.general}
+          </Typography>
+        )}
 
         <Box
           component="form"
@@ -204,9 +303,12 @@ export default function AddUser() {
             type="password"
             value={form.password}
             onChange={handleChange}
-            required
+            required={!isEdit}
             error={!!errors.password}
-            helperText={errors.password}
+            helperText={
+              errors.password ||
+              (isEdit ? "Leave blank to keep current password" : "")
+            }
             fullWidth
             sx={{ maxWidth: "380px" }}
           />
