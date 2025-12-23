@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
@@ -45,4 +46,13 @@ public class UserController {
     ) {
         return userService.updateUser(id, dto);
     }
+
+    @PatchMapping("/{id}/active")
+    public UserResponseDTO updateUserActive(
+            @PathVariable Long id,
+            @RequestBody Map<String, Boolean> body
+    ) {
+        return userService.updateUserActiveStatus(id, body.get("active"));
+    }
+
 }

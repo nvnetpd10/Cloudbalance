@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { FaEdit, FaTrash, FaSearch } from "react-icons/fa";
+import axios from "axios";
 
 import {
   Button,
@@ -144,19 +145,56 @@ export default function Users() {
     });
   };
 
-  const handleConfirmToggle = () => {
-    const { userId, newState } = toggleDialog;
-    const updatedPagedUsers = pagedUsers.map((user) =>
-      user.id === userId ? { ...user, active: newState } : user
-    );
-    setPagedUsers(updatedPagedUsers);
+  // const handleConfirmToggle = () => {
+  //   const { userId, newState } = toggleDialog;
+  //   const updatedPagedUsers = pagedUsers.map((user) =>
+  //     user.id === userId ? { ...user, active: newState } : user
+  //   );
+  //   setPagedUsers(updatedPagedUsers);
 
-    setAlertDialog({
-      open: true,
-      message: `User has been ${
-        newState ? "activated" : "deactivated"
-      } successfully!`,
-    });
+  //   setAlertDialog({
+  //     open: true,
+  //     message: `User has been ${
+  //       newState ? "activated" : "deactivated"
+  //     } successfully!`,
+  //   });
+
+  //   setToggleDialog({
+  //     open: false,
+  //     userId: null,
+  //     newState: null,
+  //     userName: "",
+  //   });
+  // };
+
+  const handleConfirmToggle = async () => {
+    const { userId, newState } = toggleDialog;
+
+    try {
+      await axios.patch(
+        `http://localhost:8080/users/${userId}/active`,
+        { active: newState },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      const updatedPagedUsers = pagedUsers.map((user) =>
+        user.id === userId ? { ...user, active: newState } : user
+      );
+      setPagedUsers(updatedPagedUsers);
+
+      setAlertDialog({
+        open: true,
+        message: `User has been ${
+          newState ? "activated" : "deactivated"
+        } successfully!`,
+      });
+    } catch (err) {
+      alert("Failed to update user status");
+    }
 
     setToggleDialog({
       open: false,

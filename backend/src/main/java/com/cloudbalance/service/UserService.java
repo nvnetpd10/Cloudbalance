@@ -12,6 +12,8 @@ public interface UserService {
     UserResponseDTO addUser(UserRequestDTO userRequestDTO);
     UserResponseDTO updateUser(Long id , UserRequestDTO dto);
     UserResponseDTO patchUser(Long id , UserRequestDTO dto);
+    UserResponseDTO updateUserActiveStatus(Long id, boolean active);
+
     void deleteUser(Long id);
 
 }
