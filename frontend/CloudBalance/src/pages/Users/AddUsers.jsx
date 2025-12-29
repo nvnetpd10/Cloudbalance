@@ -262,8 +262,8 @@ export default function AddUser() {
             fullWidth
             sx={{ maxWidth: "380px" }}
           >
-            <MenuItem value="admin">Admin</MenuItem>
-            <MenuItem value="manager">ReadOnly</MenuItem>
+            <MenuItem value="Admin">Admin</MenuItem>
+            <MenuItem value="ReadOnly">ReadOnly</MenuItem>
             <MenuItem value="Customer">Customer</MenuItem>
           </TextField>
 
