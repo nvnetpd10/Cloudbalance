@@ -145,28 +145,6 @@ export default function Users() {
     });
   };
 
-  // const handleConfirmToggle = () => {
-  //   const { userId, newState } = toggleDialog;
-  //   const updatedPagedUsers = pagedUsers.map((user) =>
-  //     user.id === userId ? { ...user, active: newState } : user
-  //   );
-  //   setPagedUsers(updatedPagedUsers);
-
-  //   setAlertDialog({
-  //     open: true,
-  //     message: `User has been ${
-  //       newState ? "activated" : "deactivated"
-  //     } successfully!`,
-  //   });
-
-  //   setToggleDialog({
-  //     open: false,
-  //     userId: null,
-  //     newState: null,
-  //     userName: "",
-  //   });
-  // };
-
   const handleConfirmToggle = async () => {
     const { userId, newState } = toggleDialog;
 

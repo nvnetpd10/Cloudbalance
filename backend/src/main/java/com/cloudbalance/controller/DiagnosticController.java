@@ -62,7 +62,6 @@ public class DiagnosticController {
                 continue;
             }
 
-            // Check if already BCrypt encoded
             if (!currentPassword.startsWith("$2a$") && !currentPassword.startsWith("$2b$")) {
                 // This is plain text - encode it
                 String encodedPassword = passwordEncoder.encode(currentPassword);
@@ -132,7 +131,6 @@ public class DiagnosticController {
             return result;
         }
 
-        // Encode and set the password
         String encodedPassword = passwordEncoder.encode(newPassword);
         user.setPassword(encodedPassword);
         userRepository.save(user);

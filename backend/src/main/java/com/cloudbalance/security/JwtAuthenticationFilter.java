@@ -31,9 +31,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        // Skip JWT validation for diagnostic and auth endpoints
         if (path.startsWith("/diagnostic") || path.startsWith("/auth/")) {
-            System.out.println("⏭️  Skipping JWT filter for public endpoint: " + path);
+            System.out.println("  Skipping JWT filter for public endpoint: " + path);
             chain.doFilter(request, response);
             return;
         }
@@ -51,7 +50,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             token = header.substring(7);
             System.out.println("Token from header: " + token);
         } else {
-            System.out.println("⚠️  No Bearer token found");
+            System.out.println(" No Bearer token found");
             chain.doFilter(request, response);
             return;
         }
@@ -60,7 +59,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             username = jwtUtils.extractUsername(token);
             System.out.println("Username from token: " + username);
         } catch (Exception e) {
-            System.out.println("❌ INVALID TOKEN: " + e.getMessage());
+            System.out.println("INVALID TOKEN: " + e.getMessage());
             chain.doFilter(request, response);
             return;
         }
@@ -79,9 +78,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext().setAuthentication(authToken);
 
-                System.out.println("✅ AUTHENTICATION SUCCESS FOR USER → " + username);
+                System.out.println(" AUTHENTICATION SUCCESS FOR USER → " + username);
             } else {
-                System.out.println("❌ Token validation failed");
+                System.out.println(" Token validation failed");
             }
         }
 

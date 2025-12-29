@@ -31,25 +31,15 @@ export default function AddUser() {
   });
 
   useEffect(() => {
-    console.log("🔍 useEffect triggered");
-    console.log("📝 isEdit:", isEdit);
-    console.log("🆔 User ID:", id);
-
     if (isEdit) {
       const token = getToken();
-      console.log("🔑 Token:", token ? "EXISTS" : "MISSING");
-
       if (!token) {
-        console.error("❌ No token found!");
         alert("Session expired. Please login again.");
         localStorage.removeItem("token");
         navigate("/login");
         return;
       }
-
       setLoading(true);
-      console.log("🌐 Fetching user with ID:", id);
-
       axios
         .get(`http://localhost:8080/users/${id}`, {
           headers: {
@@ -57,7 +47,6 @@ export default function AddUser() {
           },
         })
         .then((res) => {
-          console.log("✅ User data received:", res.data);
           setForm({
             firstName: res.data.firstName || "",
             lastName: res.data.lastName || "",
@@ -68,13 +57,7 @@ export default function AddUser() {
           setLoading(false);
         })
         .catch((err) => {
-          console.error("❌ Error fetching user:", err);
-          console.error("❌ Error response:", err.response);
-          console.error("❌ Error status:", err.response?.status);
-          console.error("❌ Error data:", err.response?.data);
-
           setLoading(false);
-
           if (err.response?.status === 404) {
             alert("User not found");
             navigate("/dashboard/users");
@@ -114,9 +97,7 @@ export default function AddUser() {
     if (!form.email.trim()) newErrors.email = "Email is required";
     if (!form.role.trim()) newErrors.role = "Role is required";
 
-    // ✅ Password validation logic fixed
     if (!isEdit) {
-      // ADD MODE: Password is required
       if (!form.password.trim()) {
         newErrors.password = "Password is required";
       } else if (!isValidPassword(form.password)) {
@@ -124,12 +105,10 @@ export default function AddUser() {
           "Min 5 chars, 1 letter, 1 number & 1 special character required";
       }
     } else {
-      // EDIT MODE: Password is optional, but if provided, must be valid
       if (form.password.trim() && !isValidPassword(form.password)) {
         newErrors.password =
           "Min 5 chars, 1 letter, 1 number & 1 special character required";
       }
-      // ✅ If password is empty in edit mode, that's OK - no error
     }
 
     setErrors(newErrors);
@@ -143,29 +122,20 @@ export default function AddUser() {
       active: true,
     };
 
-    // ✅ Only include password in payload if user entered one
     if (!isEdit) {
-      // ADD MODE: Always include password
       payload.password = form.password;
     } else if (form.password.trim()) {
-      // EDIT MODE: Only include password if user provided a new one
       payload.password = form.password;
     }
 
-    console.log("📤 Submitting payload:", payload);
-
     try {
       if (isEdit) {
-        console.log("🔄 Updating user with ID:", id);
         await updateUser(id, payload);
       } else {
-        console.log("➕ Adding new user");
         await addUser(payload);
       }
       navigate("/dashboard/users");
     } catch (error) {
-      console.error("❌ Submit Error:", error);
-
       if (error.message === "No token found") {
         alert("Session expired. Please login again.");
         navigate("/login");
