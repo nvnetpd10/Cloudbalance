@@ -17,11 +17,12 @@
 //   return localStorage.getItem("token");
 // };
 
-
-export const login = (email, token, role) => {
-  localStorage.setItem("user", JSON.stringify({ email, role })); // Role bhi save karo
-  localStorage.setItem("token", token);
-  localStorage.setItem("role", role); // Direct access ke liye
+// Function parameters update karein taaki ye backend response se match kare
+export const login = (email, accessToken, refreshToken, role) => {
+  localStorage.setItem("user", JSON.stringify({ email, role }));
+  localStorage.setItem("token", accessToken); // accessToken ko save karein
+  localStorage.setItem("refreshToken", refreshToken); // Refresh token bhi save karein
+  localStorage.setItem("role", role);
 };
 
 export const logout = () => {
@@ -38,4 +39,8 @@ export const getRole = () => {
 
 export const getToken = () => {
   return localStorage.getItem("token");
+};
+
+export const getRefreshToken = () => {
+  return localStorage.getItem("refreshToken");
 };

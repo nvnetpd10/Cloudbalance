@@ -229,16 +229,23 @@ export default function Login() {
         password,
       });
 
-      // Backend se token aur role dono aa rahe hain
-      const { token, role } = response.data;
+      // CHANGE 1: Backend se ab 'accessToken' aur 'refreshToken' aa rahe hain
+      const {
+        accessToken,
+        refreshToken,
+        role,
+        email: userEmail,
+      } = response.data;
 
-      if (!token) {
-        alert("Login failed: token not received");
+      // CHANGE 2: 'token' ki jagah 'accessToken' check karein
+      if (!accessToken) {
+        alert("Login failed: Access token not received");
         return;
       }
 
-      // auth.js function call - ab email, token aur role teeno bhej rahe hain
-      login(email, token, role);
+      // CHANGE 3: auth.js function call - charo parameters bhej rahe hain
+      // Note: Ensure karein ki aapka auth.js wala login() function bhi 4 parameters leta ho
+      login(userEmail, accessToken, refreshToken, role);
 
       // ROLE BASED REDIRECTION LOGIC
       if (role === "Customer") {
@@ -247,7 +254,7 @@ export default function Login() {
         navigate("/dashboard/users");
       }
     } catch (err) {
-      console.error(err);
+      console.error("Login Error Details:", err);
       alert(
         err.response?.data?.message || "Login failed. Check email and password."
       );
