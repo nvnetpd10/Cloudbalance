@@ -1,27 +1,19 @@
 package com.cloudbalance.controller;
 
 import com.cloudbalance.dto.LoginDto;
-import com.cloudbalance.entity.UserEntity;
-import com.cloudbalance.repository.UserRepository;
-import com.cloudbalance.utils.JwtUtils;
+import com.cloudbalance.service.AuthService;
+
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Instant;
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -32,14 +24,11 @@ import java.util.Map;
 )
 public class AuthController {
 
-    @Autowired
-    private JwtUtils jwtUtils;
+    private final AuthService authService;
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private UserRepository userRepository;
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
 
     @GetMapping("/authCheck")
     public ResponseEntity<?> authCheck(Authentication authentication) {
@@ -57,36 +46,9 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody LoginDto loginDto) {
 
         try {
-            Authentication authentication =
-                    authenticationManager.authenticate(
-                            new UsernamePasswordAuthenticationToken(
-                                    loginDto.getEmail(),
-                                    loginDto.getPassword()
-                            )
-                    );
-
-            UserDetails userDetails =
-                    (UserDetails) authentication.getPrincipal();
-
-            UserEntity user =
-                    userRepository.findByEmail(userDetails.getUsername())
-                            .orElseThrow(() ->
-                                    new UsernameNotFoundException("User not found")
-                            );
-
-            user.setLastLogin(Instant.now());
-            userRepository.save(user);
-
-            String token =
-                    jwtUtils.generateToken(userDetails.getUsername());
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("token", token);
-            response.put("email", user.getEmail());
-            response.put("role", user.getRole());
-            response.put("message", "Login success");
-
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(
+                    authService.login(loginDto)
+            );
 
         } catch (BadCredentialsException ex) {
             return ResponseEntity
