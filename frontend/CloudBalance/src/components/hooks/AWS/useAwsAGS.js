@@ -11,7 +11,7 @@ export default function useAwsAGS() {
         await new Promise((res) => setTimeout(res, 1000));
 
         const res = await axios.get(
-          "https://mocki.io/v1/0407862a-f5da-4ede-82ca-1d995a1e123a"
+          "https://mocki.io/v1/94f135b4-8ba4-435d-bc81-0b75bcf74afc"
         );
 
         setResources(res.data);

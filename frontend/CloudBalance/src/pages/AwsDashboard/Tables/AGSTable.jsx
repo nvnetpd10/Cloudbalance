@@ -21,13 +21,6 @@ export default function RGSTable() {
   const { resources, loading } = useAwsAGS();
   const [pagedResources, setPagedResources] = useState([]);
 
-  const [toggleDialog, setToggleDialog] = useState({
-    open: false,
-    resourceId: null,
-    newState: null,
-    resourceName: "",
-  });
-
   const columns = [
     {
       name: "Resource ID",
@@ -52,18 +45,21 @@ export default function RGSTable() {
       field: "desiredCapacity",
       key: "desiredCapacity",
       sortable: true,
+      formatter: (row) => String(row.desiredCapacity ?? "N/A"),
     },
     {
       name: "Min Size",
       field: "minSize",
       key: "minSize",
       sortable: true,
+      formatter: (row) => String(row.minSize ?? "N/A"),
     },
     {
       name: "Max Size",
       field: "maxSize",
       key: "maxSize",
       sortable: true,
+      formatter: (row) => String(row.maxSize ?? "N/A"),
     },
     {
       name: "Status",

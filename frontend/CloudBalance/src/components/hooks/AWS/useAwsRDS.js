@@ -11,7 +11,7 @@ export default function useAwsRDS() {
         await new Promise((res) => setTimeout(res, 1000));
 
         const res = await axios.get(
-          "https://mocki.io/v1/0b39d1ad-60b2-4c97-806f-c76c5949c267"
+          "https://mocki.io/v1/a88afcde-ce9a-4bc5-9fee-988cf2daf64d"
         );
 
         setResources(res.data);
