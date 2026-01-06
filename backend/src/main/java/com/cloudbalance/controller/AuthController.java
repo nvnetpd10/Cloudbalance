@@ -14,6 +14,10 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+
 
 import java.util.Map;
 
@@ -55,10 +59,26 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginDto loginDto) {
-
+    public ResponseEntity<?> login(
+            @RequestBody LoginDto loginDto,
+            HttpServletResponse response
+    ) {
         try {
-            return ResponseEntity.ok(authService.login(loginDto));
+            Map<String, Object> data = authService.login(loginDto);
+
+            String refreshToken = (String) data.remove("refreshToken");
+
+            ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
+                    .httpOnly(true)
+                    .secure(false) // true in production (HTTPS)
+                    .path("/auth/refresh")
+                    .maxAge(7 * 24 * 60 * 60)
+                    .sameSite("Lax")
+                    .build();
+
+            response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+            return ResponseEntity.ok(data);
 
         } catch (BadCredentialsException ex) {
             return ResponseEntity
@@ -79,13 +99,12 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refresh(@RequestBody Map<String, String> request) {
-
-        String token = request.get("refreshToken");
-
+    public ResponseEntity<?> refresh(
+            @CookieValue(name = "refreshToken", required = false) String token
+    ) {
         if (token == null || token.isBlank()) {
             return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
+                    .status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("message", "Refresh token missing"));
         }
 
