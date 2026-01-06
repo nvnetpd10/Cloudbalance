@@ -1,6 +1,7 @@
 package com.cloudbalance.service;
 
 import com.cloudbalance.dto.LoginDto;
+import com.cloudbalance.entity.RefreshTokenEntity;
 import com.cloudbalance.entity.UserEntity;
 import com.cloudbalance.repository.UserRepository;
 import com.cloudbalance.utils.JwtUtils;
@@ -22,15 +23,18 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final JwtUtils jwtUtils;
+    private final RefreshTokenService refreshTokenService;
 
     public AuthService(
             AuthenticationManager authenticationManager,
             UserRepository userRepository,
-            JwtUtils jwtUtils
+            JwtUtils jwtUtils,
+            RefreshTokenService refreshTokenService
     ) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.jwtUtils = jwtUtils;
+        this.refreshTokenService = refreshTokenService;
     }
 
     public Map<String, Object> login(LoginDto loginDto) {
@@ -55,18 +59,24 @@ public class AuthService {
         user.setLastLogin(Instant.now());
         userRepository.save(user);
 
-        String token =
+        String accessToken =
                 jwtUtils.generateToken(
-                        userDetails.getUsername(),
+                        user.getEmail(),
                         user.getRole()
                 );
 
+        RefreshTokenEntity refreshToken =
+                refreshTokenService.createOrUpdateRefreshToken(user);
+
 
         Map<String, Object> response = new HashMap<>();
-        response.put("token", token);
+        response.put("accessToken", accessToken);
+        response.put("refreshToken", refreshToken.getToken());
         response.put("email", user.getEmail());
         response.put("role", user.getRole());
 
         return response;
     }
+
+
 }
