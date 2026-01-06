@@ -1,7 +1,15 @@
-export const login = (email, token, role) => {
+const decodeToken = (token) => {
+  try {
+    const payload = token.split(".")[1];
+    return JSON.parse(atob(payload));
+  } catch {
+    return null;
+  }
+};
+
+export const login = (email, token) => {
   localStorage.setItem("user", JSON.stringify({ email }));
   localStorage.setItem("token", token);
-  localStorage.setItem("role", role);
 };
 
 export const logout = () => {
@@ -12,10 +20,13 @@ export const isLoggedIn = () => {
   return localStorage.getItem("token") !== null;
 };
 
-export const getRole = () => {
-  return localStorage.getItem("role");
-};
-
 export const getToken = () => {
   return localStorage.getItem("token");
+};
+
+export const getRole = () => {
+  const token = getToken();
+  if (!token) return null;
+  const decoded = decodeToken(token);
+  return decoded?.role || null;
 };

@@ -56,7 +56,11 @@ public class AuthService {
         userRepository.save(user);
 
         String token =
-                jwtUtils.generateToken(userDetails.getUsername());
+                jwtUtils.generateToken(
+                        userDetails.getUsername(),
+                        user.getRole()
+                );
+
 
         Map<String, Object> response = new HashMap<>();
         response.put("token", token);

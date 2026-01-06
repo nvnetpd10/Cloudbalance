@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { getRole } from "../utils/auth";
 import Login from "../pages/Login/Login";
-import ProtectedRoute from "../routes/ProtectedRoute";
+import ProtectedRoute from "./ProtectedRoute";
 import MainLayout from "../layouts/MainLayout";
 
 import Users from "../pages/Users/Users";
@@ -16,8 +16,7 @@ import AddCustomerManagedPolicies from "../pages/Onboarding/LinkPages/PageTwo";
 import CreateCostUsageReport from "../pages/Onboarding/LinkPages/PageThree";
 
 export default function AppRoutes() {
-  const rawRole = getRole();
-  const role = rawRole ? rawRole.toUpperCase() : "";
+  const role = getRole()?.toUpperCase();
 
   return (
     <Routes>
@@ -43,31 +42,67 @@ export default function AppRoutes() {
           }
         />
 
-        {role !== "CUSTOMER" && (
-          <>
-            <Route path="users" element={<Users />} />
-            <Route path="users/add" element={<AddUsers />} />
-            <Route path="users/edit/:id" element={<AddUsers />} />
-
-            <Route path="onboarding" element={<Onboarding />} />
-            <Route
-              path="onboarding/create-iam-role"
-              element={<CreateIamRole />}
-            />
-            <Route
-              path="onboarding/customer-managed-policies"
-              element={<AddCustomerManagedPolicies />}
-            />
-            <Route
-              path="onboarding/create-cost"
-              element={<CreateCostUsageReport />}
-            />
-          </>
-        )}
-
         <Route path="cost-explorer" element={<CostExplorer />} />
         <Route path="aws-dashboard" element={<AwsDashboard />} />
         <Route path="aws-dashboard/ec2" element={<EC2Table />} />
+
+        <Route
+          path="users"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN", "READONLY"]}>
+              <Users />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="users/add"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AddUsers />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="users/edit/:id"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AddUsers />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="onboarding"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN", "READONLY"]}>
+              <Onboarding />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="onboarding/create-iam-role"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <CreateIamRole />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="onboarding/customer-managed-policies"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AddCustomerManagedPolicies />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="onboarding/create-cost"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <CreateCostUsageReport />
+            </ProtectedRoute>
+          }
+        />
 
         <Route path="*" element={<NotFound />} />
       </Route>

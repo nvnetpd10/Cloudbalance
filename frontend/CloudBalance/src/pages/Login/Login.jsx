@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Box, TextField, Button, Paper, Avatar } from "@mui/material";
-import { login, isLoggedIn, getRole } from "../../utils/auth"; 
+import { login, isLoggedIn, getRole } from "../../utils/auth";
 import { useNavigate } from "react-router-dom";
 import Logo from "../../assets/images/CloudKeeper_Logo.jpg";
 import axios from "axios";
@@ -28,8 +28,9 @@ export default function Login() {
     if (!value) return "Email is required";
     if (!value.includes("@")) return "Email must contain @";
     const parts = value.split("@");
-    if (!parts[1] || !parts[1].includes("."))
+    if (!parts[1] || !parts[1].includes(".")) {
       return "Email must have a valid domain";
+    }
     return "";
   };
 
@@ -54,22 +55,23 @@ export default function Login() {
         password,
       });
 
-      const { token, role } = response.data;
+      const { token } = response.data;
 
       if (!token) {
         alert("Login failed: Access token not received");
         return;
       }
 
-      login(email, token, role);
+      login(email, token);
 
-      if (role === "Customer") {
+      const role = getRole();
+
+      if (role === "CUSTOMER") {
         navigate("/dashboard/cost-explorer");
       } else {
         navigate("/dashboard/users");
       }
     } catch (err) {
-      console.error("Login Error Details:", err);
       alert(
         err.response?.data?.message || "Login failed. Check email and password."
       );
@@ -155,7 +157,7 @@ export default function Login() {
             py: 1.2,
             borderRadius: "12px",
             textTransform: "none",
-            bgcolor: " #4d94ff",
+            bgcolor: "#4d94ff",
             fontSize: "16px",
             fontWeight: "600",
             boxShadow: "0 4px 12px rgba(0,0,0,0.10)",
