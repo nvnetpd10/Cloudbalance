@@ -3,7 +3,7 @@ import { Box, TextField, Button, Paper, Avatar } from "@mui/material";
 import { login, isLoggedIn, getRole } from "../../utils/auth";
 import { useNavigate } from "react-router-dom";
 import Logo from "../../assets/images/CloudKeeper_Logo.jpg";
-import axios from "axios";
+import api from "../../utils/axios"; // ✅ use axios interceptor
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -50,31 +50,29 @@ export default function Login() {
     if (emailErr || passwordErr) return;
 
     try {
-      const response = await axios.post("http://localhost:8080/auth/login", {
-        email,
-        password,
-      });
+      // ✅ MUST use api (axios interceptor, cookies enabled)
+      const response = await api.post("/auth/login", { email, password });
 
-      const { accessToken } = response.data;
+      const accessToken = response.data?.accessToken;
 
       if (!accessToken) {
-        alert("Login failed: Access token not received");
+        alert("Login failed: access token missing");
         return;
       }
 
+      // ✅ store access token only (refresh is HttpOnly cookie)
       login(email, accessToken);
 
       const role = getRole();
 
+      // ✅ KEEP your routing logic
       if (role === "CUSTOMER") {
         navigate("/dashboard/cost-explorer");
       } else {
         navigate("/dashboard/users");
       }
     } catch (err) {
-      alert(
-        err.response?.data?.message || "Login failed. Check email and password."
-      );
+      alert(err.response?.data?.message || "Login failed");
     }
   };
 

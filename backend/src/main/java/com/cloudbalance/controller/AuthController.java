@@ -8,6 +8,8 @@ import com.cloudbalance.service.AuthService;
 import com.cloudbalance.service.RefreshTokenService;
 import com.cloudbalance.utils.JwtUtils;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -19,7 +21,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 
 
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
@@ -99,21 +103,23 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refresh(
-            @CookieValue(name = "refreshToken", required = false) String token
-    ) {
-        if (token == null || token.isBlank()) {
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("message", "Refresh token missing"));
-        }
+    public ResponseEntity<?> refresh(HttpServletRequest request) {
 
         RefreshTokenEntity refreshToken =
-                refreshTokenRepository.findByToken(token)
+                refreshTokenRepository.findByToken(
+                                Arrays.stream(Optional.ofNullable(request.getCookies()).orElse(new Cookie[0]))
+                                        .filter(c -> c.getName().equals("refreshToken"))
+                                        .findFirst()
+                                        .map(Cookie::getValue)
+                                        .orElse(null)
+                        )
                         .map(refreshTokenService::verifyExpiration)
-                        .orElseThrow(() ->
-                                new RuntimeException("Invalid refresh token")
-                        );
+                        .orElse(null);
+
+        if (refreshToken == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Refresh token invalid or expired"));
+        }
 
         UserEntity user = refreshToken.getUser();
 
@@ -124,6 +130,7 @@ public class AuthController {
                 Map.of("accessToken", newAccessToken)
         );
     }
+
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout() {

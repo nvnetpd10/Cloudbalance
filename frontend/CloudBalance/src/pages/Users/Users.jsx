@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { FaEdit, FaSearch } from "react-icons/fa";
-import axios from "axios";
+import api from "../../utils/axios"; // ✅ USE INTERCEPTOR
 import { getRole } from "../../utils/auth";
 
 import {
@@ -144,19 +144,16 @@ export default function Users() {
   const handleConfirmToggle = async () => {
     const { userId, newState } = toggleDialog;
     try {
-      await axios.patch(
-        `http://localhost:8080/users/${userId}/active`,
-        { active: newState },
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      );
+      // ✅ USE api (refresh handled automatically)
+      await api.patch(`/users/${userId}/active`, { active: newState });
+
       setPagedUsers((prev) =>
         prev.map((u) => (u.id === userId ? { ...u, active: newState } : u))
       );
     } catch (err) {
       alert("Failed to update user status");
     }
+
     setToggleDialog({
       open: false,
       userId: null,

@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useOutletContext } from "react-router-dom";
-import axios from "axios";
+import api from "../../utils/axios"; // ✅ interceptor
 import useUserActions from "../../components/hooks/Users/useUserActions";
-import { getToken } from "../../utils/auth";
 import {
   Box,
   Paper,
@@ -30,49 +29,32 @@ export default function AddUser() {
     password: "",
   });
 
+  // 🔹 LOAD USER (EDIT MODE)
   useEffect(() => {
-    if (isEdit) {
-      const token = getToken();
-      if (!token) {
-        alert("Session expired. Please login again.");
-        localStorage.removeItem("token");
-        navigate("/login");
-        return;
-      }
-      setLoading(true);
-      axios
-        .get(`http://localhost:8080/users/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        .then((res) => {
-          setForm({
-            firstName: res.data.firstName || "",
-            lastName: res.data.lastName || "",
-            email: res.data.email || "",
-            role: res.data.role || "",
-            password: "",
-          });
-          setLoading(false);
-        })
-        .catch((err) => {
-          setLoading(false);
-          if (err.response?.status === 404) {
-            alert("User not found");
-            navigate("/dashboard/users");
-          } else if (
-            err.response?.status === 401 ||
-            err.response?.status === 403
-          ) {
-            alert("Session expired. Please login again.");
-            localStorage.removeItem("token");
-            navigate("/login");
-          } else {
-            alert("Failed to load user data. Check console for details.");
-          }
+    if (!isEdit) return;
+
+    setLoading(true);
+    api
+      .get(`/users/${id}`)
+      .then((res) => {
+        setForm({
+          firstName: res.data.firstName || "",
+          lastName: res.data.lastName || "",
+          email: res.data.email || "",
+          role: res.data.role || "",
+          password: "",
         });
-    }
+        setLoading(false);
+      })
+      .catch((err) => {
+        setLoading(false);
+        if (err.response?.status === 404) {
+          alert("User not found");
+          navigate("/dashboard/users");
+        } else {
+          alert("Failed to load user data");
+        }
+      });
   }, [isEdit, id, navigate]);
 
   const handleChange = (e) => {
@@ -89,6 +71,7 @@ export default function AddUser() {
     return regex.test(password);
   };
 
+  // 🔹 SUBMIT
   const handleSubmit = async () => {
     const newErrors = {};
 
@@ -104,11 +87,9 @@ export default function AddUser() {
         newErrors.password =
           "Min 5 chars, 1 letter, 1 number & 1 special character required";
       }
-    } else {
-      if (form.password.trim() && !isValidPassword(form.password)) {
-        newErrors.password =
-          "Min 5 chars, 1 letter, 1 number & 1 special character required";
-      }
+    } else if (form.password.trim() && !isValidPassword(form.password)) {
+      newErrors.password =
+        "Min 5 chars, 1 letter, 1 number & 1 special character required";
     }
 
     setErrors(newErrors);
@@ -122,11 +103,8 @@ export default function AddUser() {
       active: true,
     };
 
-    if (!isEdit) {
-      payload.password = form.password;
-    } else if (form.password.trim()) {
-      payload.password = form.password;
-    }
+    if (!isEdit) payload.password = form.password;
+    else if (form.password.trim()) payload.password = form.password;
 
     try {
       if (isEdit) {
@@ -136,27 +114,16 @@ export default function AddUser() {
       }
       navigate("/dashboard/users");
     } catch (error) {
-      if (error.message === "No token found") {
-        alert("Session expired. Please login again.");
-        navigate("/login");
-      } else if (error.response) {
-        const msg = error.response.data?.message || error.response.data;
-        if (error.response.status === 401) {
-          alert("Session expired. Please login again.");
-          localStorage.removeItem("token");
-          navigate("/login");
-        } else if (error.response.status === 409) {
-          setErrors({ email: "User with this email already exists" });
-        } else if (error.response.status === 400) {
-          setErrors({ general: "Invalid input. Please check all fields." });
-        } else {
-          setErrors({ general: msg || "Failed to save user." });
-        }
+      if (error.response?.status === 409) {
+        setErrors({ email: "User with this email already exists" });
+      } else if (error.response?.status === 400) {
+        setErrors({ general: "Invalid input. Please check all fields." });
       } else {
-        setErrors({ general: "Network error. Please check your connection." });
+        setErrors({ general: "Failed to save user" });
       }
     }
   };
+
   if (loading) {
     return (
       <Box
