@@ -55,14 +55,14 @@ export default function Login() {
         password,
       });
 
-      const { token } = response.data;
+      const { accessToken } = response.data;
 
-      if (!token) {
+      if (!accessToken) {
         alert("Login failed: Access token not received");
         return;
       }
 
-      login(email, token);
+      login(email, accessToken);
 
       const role = getRole();
 

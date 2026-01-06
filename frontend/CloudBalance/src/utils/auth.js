@@ -7,9 +7,9 @@ const decodeToken = (token) => {
   }
 };
 
-export const login = (email, token) => {
+export const login = (email, accessToken) => {
   localStorage.setItem("user", JSON.stringify({ email }));
-  localStorage.setItem("token", token);
+  localStorage.setItem("token", accessToken);
 };
 
 export const logout = () => {
