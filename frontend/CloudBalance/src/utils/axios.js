@@ -19,7 +19,6 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-
 let refreshPromise = null;
 
 api.interceptors.response.use(
@@ -47,16 +46,21 @@ api.interceptors.response.use(
         login(null, newAccessToken);
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
-        return api(originalRequest);
-      } catch (err) {
+        return api(originalRequest); // ✅ retry succeeds
+      } catch {
         refreshPromise = null;
         logout();
         window.location.href = "/login";
-        return Promise.reject(err);
+        return Promise.resolve(); // 🔕 suppress error
       }
     }
 
-    return Promise.reject(error);
+    // 🔕 suppress expected auth errors completely
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      return Promise.resolve();
+    }
+
+    return Promise.reject(error); // real errors only
   }
 );
 

@@ -55,12 +55,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
+//        try {
+//            username = jwtUtils.extractUsername(token);
+//            System.out.println("Username from token: " + username);
+//        } catch (Exception e) {
+//            System.out.println("INVALID TOKEN: " + e.getMessage());
+//            e.printStackTrace();
+//            chain.doFilter(request, response);
+//            return;
+//        }
+
         try {
             username = jwtUtils.extractUsername(token);
-            System.out.println("Username from token: " + username);
-        } catch (Exception e) {
-            System.out.println("INVALID TOKEN: " + e.getMessage());
-            chain.doFilter(request, response);
+        } catch (io.jsonwebtoken.ExpiredJwtException ex) {
+            // Token expired → frontend will refresh
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        } catch (Exception ex) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 

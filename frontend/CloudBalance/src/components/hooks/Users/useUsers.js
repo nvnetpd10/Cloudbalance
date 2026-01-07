@@ -9,6 +9,7 @@ export default function useUsers() {
     const fetchUsers = async () => {
       try {
         const res = await api.get("/users");
+
         setUsers(res.data);
       } catch (error) {
         console.error("API Error:", error);
