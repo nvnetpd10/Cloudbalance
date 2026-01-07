@@ -124,7 +124,7 @@ public class AuthController {
         UserEntity user = refreshToken.getUser();
 
         String newAccessToken =
-                jwtUtils.generateToken(user.getEmail(), user.getRole());
+                jwtUtils.generateToken(user.getEmail(), user.getRole() , user.getFirstName() , user.getLastName());
 
         return ResponseEntity.ok(
                 Map.of("accessToken", newAccessToken)

@@ -24,6 +24,9 @@ import FullScreenLoader from "../../components/common/FullScreenLoader";
 export default function Users() {
   const navigate = useNavigate();
   const { users, loading } = useUsers();
+  const activeCount = users.filter((u) => u.active).length;
+  const inactiveCount = users.filter((u) => u.active === false).length;
+
   const [pagedUsers, setPagedUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -144,7 +147,6 @@ export default function Users() {
   const handleConfirmToggle = async () => {
     const { userId, newState } = toggleDialog;
     try {
-      // ✅ USE api (refresh handled automatically)
       await api.patch(`/users/${userId}/active`, { active: newState });
 
       setPagedUsers((prev) =>
@@ -192,7 +194,7 @@ export default function Users() {
             padding: "6px 10px",
             borderRadius: "4px",
             background: "#fff",
-            width: "980px",
+            width: "940px",
           }}
         >
           <FaSearch size={18} color="#1976d2" />
@@ -206,13 +208,41 @@ export default function Users() {
         </div>
 
         {isAdmin && (
+          <Box
+            sx={{
+              display: "flex",
+              gap: "12px",
+              alignItems: "center",
+              background: "#f5f7fa",
+              border: "1px solid #ddd",
+              borderRadius: "6px",
+              padding: "6px 12px",
+              fontSize: "13px",
+              fontWeight: 600,
+            }}
+          >
+            <Chip
+              label={`Active: ${activeCount}`}
+              color="success"
+              size="small"
+            />
+            <Chip
+              label={`InActive: ${inactiveCount}`}
+              color="error"
+              size="small"
+            />
+          </Box>
+        )}
+
+        {isAdmin && (
           <Button
             variant="contained"
             style={{
               backgroundColor: "#1976d2",
               textTransform: "none",
-              paddingLeft: 18,
-              paddingRight: 18,
+              paddingLeft: 14,
+              paddingRight: 14,
+              fontSize: "0.8rem",
             }}
             onClick={() => navigate("/dashboard/users/add")}
           >

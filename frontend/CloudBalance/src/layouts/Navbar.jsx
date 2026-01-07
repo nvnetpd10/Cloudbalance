@@ -16,12 +16,12 @@ import logo from "../assets/images/CloudKeeper_Logo.jpg";
 import { logout } from "../utils/auth";
 import { useSidebar } from "./MainLayout";
 import { useState } from "react";
+import { getUserFullNameFromToken } from "../utils/helper";
 
 export default function Navbar() {
   const { toggleSidebar } = useSidebar();
   const [module, setModule] = useState("");
-  const username = "Navneet Tiwari";
-
+  const username = getUserFullNameFromToken();
   return (
     <AppBar
       position="fixed"

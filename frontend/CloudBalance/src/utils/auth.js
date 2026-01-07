@@ -15,7 +15,7 @@ export const logout = () => localStorage.clear();
 
 export const getToken = () => localStorage.getItem("token");
 
-export const isLoggedIn = () => !!getToken(); // ONLY checks presence
+export const isLoggedIn = () => !!getToken(); 
 
 export const getRole = () => {
   const token = getToken();
@@ -26,3 +26,4 @@ export const getRole = () => {
 export const hasSession = () => {
   return !!localStorage.getItem("token");
 };
+
