@@ -1,13 +1,13 @@
 import { Paper, Box, Typography, Link, Checkbox, Radio } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { IconButton, Tooltip } from "@mui/material";
-import pageOneImg from "../../../assets/images/pageone.png";
 import pagethreeimgone from "../../../assets/images/pagethreeimgone.png";
 import pagethreeimgtwo from "../../../assets/images/pagethreeimgtwo.png";
 import pagethreeimgthree from "../../../assets/images/pagethreeimgthree.png";
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import api from "../../../utils/axios"; // ✅ ADD
 
 const StepNumber = ({ number }) => (
   <Box
@@ -32,13 +32,23 @@ const StepNumber = ({ number }) => (
 
 export default function CreateCostUsageReport() {
   const [copiedRole, setCopiedRole] = useState(false);
+
   const navigate = useNavigate();
+  const location = useLocation(); // ✅ ADD
+  const formData = location.state; // ✅ ADD
+
+  useEffect(() => {
+    if (!formData) {
+      navigate("/dashboard/onboarding", { replace: true });
+    }
+  }, [formData, navigate]);
 
   const handleCopyRole = async () => {
     await navigator.clipboard.writeText("ck-tuner-275595855473-hourly-cur");
     setCopiedRole(true);
     setTimeout(() => setCopiedRole(false), 1500);
   };
+
   const handleCopy = async () => {
     await navigator.clipboard.writeText("275595855473");
     setCopiedRole(true);
@@ -396,7 +406,20 @@ export default function CreateCostUsageReport() {
 
           <Box
             component="button"
-            onClick={() => navigate("/dashboard/onboarding")}
+            onClick={async () => {
+              try {
+                await api.post("/onboarding/accounts", {
+                  accountId: formData.accountId,
+                  accountName: formData.accountName,
+                  arn: formData.arn,
+                });
+
+                navigate("/dashboard/onboarding");
+              } catch (err) {
+                console.error(err);
+                alert("Failed to save account");
+              }
+            }}
             sx={{
               px: 3,
               py: 1,
@@ -404,14 +427,8 @@ export default function CreateCostUsageReport() {
               fontWeight: 500,
               color: "white",
               backgroundColor: (theme) => theme.palette.primary.main,
-              border: "1px solid",
-              borderColor: (theme) => theme.palette.primary.main,
               borderRadius: "4px",
               cursor: "pointer",
-              transition: "background-color 0.1s",
-              "&:hover": {
-                backgroundColor: (theme) => theme.palette.primary.dark,
-              },
             }}
           >
             Submit

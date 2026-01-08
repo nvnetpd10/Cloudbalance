@@ -2,10 +2,11 @@ import { Paper, Box, Typography, Link } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { IconButton, Tooltip } from "@mui/material";
 import pageOneImg from "../../../assets/images/pageone.png";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import pagetwoimgone from "../../../assets/images/pagetwoimgone.png";
 import pagetwoimgtwo from "../../../assets/images/pagetwoimgtwo.png";
+import { useLocation } from "react-router-dom";
 
 const StepNumber = ({ number }) => (
   <Box
@@ -32,6 +33,14 @@ export default function AddCustomerManagedPolicies() {
   const [copied, setCopied] = useState(false);
   const [copiedRole, setCopiedRole] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const formData = location.state;
+
+  useEffect(() => {
+    if (!formData) {
+      navigate("/dashboard/onboarding", { replace: true });
+    }
+  }, [formData, navigate]);
 
   const iamPolicy = `{
   "Version": "2012-10-17",
@@ -382,7 +391,11 @@ export default function AddCustomerManagedPolicies() {
 
           <Box
             component="button"
-            onClick={() => navigate("/dashboard/onboarding/create-cost")}
+            onClick={() =>
+              navigate("/dashboard/onboarding/create-cost", {
+                state: formData,
+              })
+            }
             sx={{
               px: 3,
               py: 1,

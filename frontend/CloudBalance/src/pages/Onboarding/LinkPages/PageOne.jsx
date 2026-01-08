@@ -29,6 +29,14 @@ const StepNumber = ({ number }) => (
 export default function CreateIamRole() {
   const [copied, setCopied] = useState(false);
   const [copiedRole, setCopiedRole] = useState(false);
+
+  const [form, setForm] = useState({
+    arn: "",
+    accountId: "",
+    accountName: "",
+  });
+
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
   const iamPolicy = `{
@@ -69,6 +77,25 @@ export default function CreateIamRole() {
     await navigator.clipboard.writeText("CK-Tuner-Role-dev2");
     setCopiedRole(true);
     setTimeout(() => setCopiedRole(false), 1500);
+  };
+
+  const validate = () => {
+    const errs = {};
+
+    if (!form.arn.startsWith("arn:aws:iam::")) {
+      errs.arn = "ARN must start with arn:aws:iam::";
+    }
+
+    if (!/^\d{12}$/.test(form.accountId)) {
+      errs.accountId = "Account ID must be exactly 12 digits";
+    }
+
+    if (!form.accountName.trim()) {
+      errs.accountName = "Account Name is required";
+    }
+
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
   };
 
   return (
@@ -276,7 +303,9 @@ export default function CreateIamRole() {
             </Typography>
             <Box
               component="input"
-              placeholder="Enter the IAM Role ARN"
+              value={form.arn}
+              onChange={(e) => setForm({ ...form, arn: e.target.value })}
+              placeholder="arn:aws:iam::123456789012:role/..."
               sx={{
                 width: "82%",
                 p: 1.5,
@@ -290,6 +319,11 @@ export default function CreateIamRole() {
                 },
               }}
             />
+            {errors.arn && (
+              <Typography sx={{ color: "red", fontSize: "12px" }}>
+                {errors.arn}
+              </Typography>
+            )}
           </Box>
 
           <Box>
@@ -298,7 +332,9 @@ export default function CreateIamRole() {
             </Typography>
             <Box
               component="input"
-              placeholder="Enter Account ID"
+              value={form.accountId}
+              onChange={(e) => setForm({ ...form, accountId: e.target.value })}
+              placeholder="12 digit Account ID"
               sx={{
                 width: "82%",
                 p: 1.5,
@@ -312,6 +348,11 @@ export default function CreateIamRole() {
                 },
               }}
             />
+            {errors.accountId && (
+              <Typography sx={{ color: "red", fontSize: "12px" }}>
+                {errors.accountId}
+              </Typography>
+            )}
           </Box>
         </Box>
 
@@ -321,6 +362,8 @@ export default function CreateIamRole() {
           </Typography>
           <Box
             component="input"
+            value={form.accountName}
+            onChange={(e) => setForm({ ...form, accountName: e.target.value })}
             placeholder="Enter Account Name"
             sx={{
               width: "40%",
@@ -336,6 +379,11 @@ export default function CreateIamRole() {
               },
             }}
           />
+          {errors.accountName && (
+            <Typography sx={{ color: "red", fontSize: "12px" }}>
+              {errors.accountName}
+            </Typography>
+          )}
         </Box>
       </Paper>
 
@@ -390,9 +438,13 @@ export default function CreateIamRole() {
 
           <Box
             component="button"
-            onClick={() =>
-              navigate("/dashboard/onboarding/customer-managed-policies")
-            }
+            onClick={() => {
+              if (!validate()) return;
+
+              navigate("/dashboard/onboarding/customer-managed-policies", {
+                state: form,
+              });
+            }}
             sx={{
               px: 3,
               py: 1,

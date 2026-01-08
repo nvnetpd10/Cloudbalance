@@ -1,6 +1,6 @@
 package com.cloudbalance.security;
 
-import com.cloudbalance.service.impl.CustomUserDetailsService;
+import com.cloudbalance.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -50,6 +50,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/users/**").authenticated()
                         .requestMatchers("/account/**").authenticated()
+                        .requestMatchers("/onboarding/**").authenticated()
                         .anyRequest().permitAll()
                 )
                 .addFilterBefore(

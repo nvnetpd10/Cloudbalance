@@ -1,4 +1,4 @@
-package com.cloudbalance.service.impl;
+package com.cloudbalance.service;
 
 import com.cloudbalance.entity.UserEntity;
 import com.cloudbalance.repository.UserRepository;
