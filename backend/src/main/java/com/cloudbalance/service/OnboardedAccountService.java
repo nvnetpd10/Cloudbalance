@@ -6,19 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-//@Service
-//public class OnboardedAccountService {
-//
-//    private final OnboardedAccountRepository repository;
-//
-//    public OnboardedAccountService(OnboardedAccountRepository repository) {
-//        this.repository = repository;
-//    }
-//
-//    public List<OnboardedAccountEntity> getAllAccounts() {
-//        return repository.findAll();
-//    }
-//}
+
 @Service
 public class OnboardedAccountService {
 
