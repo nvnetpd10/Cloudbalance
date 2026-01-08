@@ -13,6 +13,12 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Popper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
 } from "@mui/material";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
@@ -61,6 +67,15 @@ const CostExplorer = () => {
     { name: "CK Discount", data: [5000, 6000, 4500, 5200, 4800, 5100] },
   ];
 
+  const months = [
+    "Jun 2025",
+    "Jul 2025",
+    "Aug 2025",
+    "Sep 2025",
+    "Oct 2025",
+    "Nov 2025",
+  ];
+
   const getSeries = () => {
     if (chartType === "line")
       return baseSeries.map((s) => ({ ...s, type: "line", smooth: true }));
@@ -75,17 +90,20 @@ const CostExplorer = () => {
     grid: { left: "3%", right: "3%", bottom: "18%", containLabel: true },
     xAxis: {
       type: "category",
-      data: [
-        "Jun 2025",
-        "Jul 2025",
-        "Aug 2025",
-        "Sep 2025",
-        "Oct 2025",
-        "Nov 2025",
-      ],
+      data: months,
     },
     yAxis: { type: "value", name: "Cost ($)" },
     series: getSeries(),
+  };
+
+  // Calculate totals for each service
+  const getRowTotal = (data) => {
+    return data.reduce((sum, value) => sum + value, 0);
+  };
+
+  // Format currency
+  const formatCurrency = (value) => {
+    return `$${value.toLocaleString()}`;
   };
 
   return (
@@ -294,6 +312,135 @@ const CostExplorer = () => {
         </Stack>
 
         <ReactECharts option={option} style={{ height: 420 }} />
+      </Paper>
+
+      {/* Data Table in separate Paper */}
+      <Paper sx={{ p: 2, mt: 2 }}>
+        <TableContainer>
+          <Table
+            size="small"
+            sx={{ border: "1px solid", borderColor: "divider" }}
+          >
+            <TableHead>
+              <TableRow sx={{ bgcolor: "grey.100" }}>
+                <TableCell
+                  sx={{
+                    fontWeight: 600,
+                    border: "1px solid",
+                    borderColor: "divider",
+                  }}
+                >
+                  Service
+                </TableCell>
+                {months.map((month) => (
+                  <TableCell
+                    key={month}
+                    align="right"
+                    sx={{
+                      fontWeight: 600,
+                      color: "primary.main",
+                      border: "1px solid",
+                      borderColor: "divider",
+                    }}
+                  >
+                    {month}
+                  </TableCell>
+                ))}
+                <TableCell
+                  align="right"
+                  sx={{
+                    fontWeight: 600,
+                    border: "1px solid",
+                    borderColor: "divider",
+                  }}
+                >
+                  Total
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {baseSeries.map((service) => (
+                <TableRow key={service.name}>
+                  <TableCell
+                    sx={{
+                      fontWeight: 600,
+                      color: "primary.main",
+                      border: "1px solid",
+                      borderColor: "divider",
+                    }}
+                  >
+                    {service.name}
+                  </TableCell>
+                  {service.data.map((value, index) => (
+                    <TableCell
+                      key={index}
+                      align="right"
+                      sx={{ border: "1px solid", borderColor: "divider" }}
+                    >
+                      {formatCurrency(value)}
+                    </TableCell>
+                  ))}
+                  <TableCell
+                    align="right"
+                    sx={{
+                      fontWeight: 600,
+                      border: "1px solid",
+                      borderColor: "divider",
+                    }}
+                  >
+                    {formatCurrency(getRowTotal(service.data))}
+                  </TableCell>
+                </TableRow>
+              ))}
+              {/* Total Row */}
+              <TableRow sx={{ bgcolor: "grey.100" }}>
+                <TableCell
+                  sx={{
+                    fontWeight: 600,
+                    border: "1px solid",
+                    borderColor: "divider",
+                  }}
+                >
+                  Total
+                </TableCell>
+                {months.map((month, monthIndex) => {
+                  const monthTotal = baseSeries.reduce(
+                    (sum, service) => sum + service.data[monthIndex],
+                    0
+                  );
+                  return (
+                    <TableCell
+                      key={month}
+                      align="right"
+                      sx={{
+                        fontWeight: 600,
+                        border: "1px solid",
+                        borderColor: "divider",
+                      }}
+                    >
+                      {formatCurrency(monthTotal)}
+                    </TableCell>
+                  );
+                })}
+                <TableCell
+                  align="right"
+                  sx={{
+                    fontWeight: 600,
+                    border: "1px solid",
+                    borderColor: "divider",
+                  }}
+                >
+                  {formatCurrency(
+                    baseSeries.reduce(
+                      (sum, service) => sum + getRowTotal(service.data),
+                      0
+                    )
+                  )}
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </TableContainer>
       </Paper>
     </>
   );
