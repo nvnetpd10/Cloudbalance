@@ -19,8 +19,10 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Drawer,
 } from "@mui/material";
 import BarChartIcon from "@mui/icons-material/BarChart";
+import TuneIcon from "@mui/icons-material/Tune";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
 import StackedBarChartIcon from "@mui/icons-material/StackedBarChart";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -46,6 +48,8 @@ const CostExplorer = () => {
 
   const handleMoreClick = (e) => setAnchorEl(e.currentTarget);
   const handleClose = () => setAnchorEl(null);
+
+  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
 
   const activeBtnStyle = {
     bgcolor: "primary.main",
@@ -158,7 +162,7 @@ const CostExplorer = () => {
         </Stack>
       </Box>
 
-      <Paper sx={{ p: 2 }}>
+      <Paper sx={{ p: 2, position: "relative", overflow: "hidden" }}>
         <Box
           sx={{
             p: 1,
@@ -220,6 +224,18 @@ const CostExplorer = () => {
             <MenuItem onClick={handleClose}>Legal Entity</MenuItem>
             <MenuItem onClick={handleClose}>Billing Entity</MenuItem>
           </Menu>
+
+          {/* RIGHT ICON */}
+          <Box sx={{ ml: "auto" }}>
+            <Button
+              size="small"
+              variant="outlined"
+              sx={{ minWidth: 36, px: 1 }}
+              onClick={() => setFilterDrawerOpen(true)}
+            >
+              <TuneIcon fontSize="small" />
+            </Button>
+          </Box>
         </Box>
 
         <Stack
@@ -240,19 +256,13 @@ const CostExplorer = () => {
               InputProps={{ readOnly: true }}
               onClick={() => setOpen(true)}
             />
-
             <ToggleButtonGroup
               size="small"
               exclusive
               value={interval}
               onChange={(e, v) => v && setInterval(v)}
               sx={{
-                height: 28,
                 "& .MuiToggleButton-root": {
-                  minHeight: 28,
-                  px: 1.5,
-                  fontSize: 12,
-                  textTransform: "none",
                   color: "primary.main",
                   borderColor: "primary.main",
                 },
@@ -275,12 +285,7 @@ const CostExplorer = () => {
               value={chartType}
               onChange={(e, v) => v && setChartType(v)}
               sx={{
-                height: 28,
                 "& .MuiToggleButton-root": {
-                  minHeight: 28,
-                  px: 1.5,
-                  fontSize: 12,
-                  textTransform: "none",
                   color: "primary.main",
                   borderColor: "primary.main",
                 },
@@ -312,6 +317,46 @@ const CostExplorer = () => {
         </Stack>
 
         <ReactECharts option={option} style={{ height: 420 }} />
+
+        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            right: filterDrawerOpen ? 0 : "-100%",
+            width: 320,
+            height: "100%",
+            bgcolor: "background.paper",
+            borderLeft: "1px solid",
+            borderColor: "divider",
+            p: 2,
+            transition: "right 0.25s ease",
+            zIndex: 10,
+            pointerEvents: filterDrawerOpen ? "auto" : "none",
+          }}
+        >
+          <Stack direction="row" justifyContent="space-between" mb={2}>
+            <Typography fontWeight={600}>Filters</Typography>
+            <Button size="small" onClick={() => setFilterDrawerOpen(false)}>
+              Close
+            </Button>
+          </Stack>
+
+          <Typography variant="body2" sx={{ mb: 1 }}>
+            Customize cost explorer settings here.
+          </Typography>
+
+          <Stack spacing={1}>
+            <Button variant="outlined" size="small">
+              Cost Allocation Tags
+            </Button>
+            <Button variant="outlined" size="small">
+              Linked Accounts
+            </Button>
+            <Button variant="outlined" size="small">
+              Charge Type
+            </Button>
+          </Stack>
+        </Box>
       </Paper>
 
       {/* Data Table in separate Paper */}
