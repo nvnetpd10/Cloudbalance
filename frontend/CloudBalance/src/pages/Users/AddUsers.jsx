@@ -251,6 +251,143 @@ export default function AddUser() {
           />
         </Box>
 
+        {form.role === "Customer" && (
+          <Box
+            sx={{
+              mt: 4,
+              mb: 3,
+              display: "flex",
+              gap: 3,
+              alignItems: "stretch",
+              background: "#f9fbff",
+              p: 3,
+              borderRadius: "14px",
+              border: "1px solid #dbe2f1",
+            }}
+          >
+            {/* LEFT BOX */}
+            <Box
+              sx={{
+                flex: 1,
+                minHeight: 320,
+                borderRadius: "14px",
+                border: "2px solid #1976d2",
+                backgroundColor: "#ffffff",
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              <Box
+                sx={{
+                  px: 2.5,
+                  py: 1.8,
+                  borderBottom: "1px solid #e3e8ef",
+                  backgroundColor: "#f1f6ff",
+                  borderTopLeftRadius: "14px",
+                  borderTopRightRadius: "14px",
+                }}
+              >
+                <Typography fontWeight={700} color="#1976d2">
+                  Choose Account IDs to Associate
+                </Typography>
+              </Box>
+
+              <Box
+                sx={{
+                  flex: 1,
+                  m: 2,
+                  border: "2px dashed #c7d2fe",
+                  borderRadius: "10px",
+                  backgroundColor: "#f8faff",
+                }}
+              />
+            </Box>
+
+            {/* ARROWS */}
+            <Box
+              sx={{
+                width: 64,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: 2,
+              }}
+            >
+              {["→", "←"].map((arrow) => (
+                <Box
+                  key={arrow}
+                  sx={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: "50%",
+                    backgroundColor: "#1976d2",
+                    color: "#fff",
+                    fontSize: 20,
+                    fontWeight: 700,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    boxShadow: "0 6px 14px rgba(25,118,210,0.35)",
+                    "&:hover": {
+                      backgroundColor: "#155fa0",
+                    },
+                  }}
+                >
+                  {arrow}
+                </Box>
+              ))}
+            </Box>
+
+            {/* RIGHT BOX */}
+            <Box
+              sx={{
+                flex: 1,
+                minHeight: 320,
+                borderRadius: "14px",
+                border: "2px solid #43a047",
+                backgroundColor: "#ffffff",
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              <Box
+                sx={{
+                  px: 2.5,
+                  py: 1.8,
+                  borderBottom: "1px solid #e3e8ef",
+                  backgroundColor: "#f1fbf4",
+                  borderTopLeftRadius: "14px",
+                  borderTopRightRadius: "14px",
+                }}
+              >
+                <Typography fontWeight={700} color="#2e7d32">
+                  Associated Account IDs
+                </Typography>
+              </Box>
+
+              <Box
+                sx={{
+                  flex: 1,
+                  m: 2,
+                  borderRadius: "10px",
+                  border: "2px dashed #b7e1c3",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#6b7280",
+                  fontSize: 14,
+                  backgroundColor: "#f6fdf8",
+                  fontWeight: 500,
+                }}
+              >
+                No Account IDs Added
+              </Box>
+            </Box>
+          </Box>
+        )}
+
         <Button
           type="button"
           variant="contained"
