@@ -21,6 +21,9 @@ import {
   TableRow,
   Drawer,
 } from "@mui/material";
+import Checkbox from "@mui/material/Checkbox";
+import Divider from "@mui/material/Divider";
+import Link from "@mui/material/Link";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import TuneIcon from "@mui/icons-material/Tune";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
@@ -50,6 +53,9 @@ const CostExplorer = () => {
   const handleClose = () => setAnchorEl(null);
 
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
+  const [selectedFilters, setSelectedFilters] = useState({});
+  const [expandedFilter, setExpandedFilter] = useState(null);
+  const [selectedFilterValues, setSelectedFilterValues] = useState({});
 
   const activeBtnStyle = {
     bgcolor: "primary.main",
@@ -79,6 +85,82 @@ const CostExplorer = () => {
     "Oct 2025",
     "Nov 2025",
   ];
+
+  const FILTERS = [
+    "Service",
+    "Instance Type",
+    "Account ID",
+    "Usage Type",
+    "Platform",
+    "Region",
+    "Usage Type Group",
+    "Purchase Option",
+    "API Operation",
+    "Resource",
+    "Charge Type",
+    "Availability Zone",
+    "Tenancy",
+    "Legal Entity",
+    "Billing Entity",
+  ];
+  const FILTER_VALUES = {
+    Service: ["EC2", "S3", "RDS", "Lambda"],
+    "Instance Type": ["t3.micro", "t3.medium", "m5.large"],
+    "Account ID": ["123456789012", "987654321098"],
+    Region: ["us-east-1", "us-west-2", "ap-south-1"],
+  };
+
+  // const toggleFilter = (name) => {
+  //   setSelectedFilters((prev) => ({
+  //     ...prev,
+  //     [name]: !prev[name],
+  //   }));
+  // };
+
+  // const resetFilters = () => {
+  //   setSelectedFilters({});
+  // };
+
+  // const toggleExpand = (filter) => {
+  //   setExpandedFilter((prev) => (prev === filter ? null : filter));
+  // };
+
+  // const toggleFilterValue = (filter, value) => {
+  //   setSelectedFilterValues((prev) => ({
+  //     ...prev,
+  //     [filter]: {
+  //       ...(prev[filter] || {}),
+  //       [value]: !prev[filter]?.[value],
+  //     },
+  //   }));
+  // };
+
+  const toggleExpand = (label) => {
+    setExpandedFilter((prev) => (prev === label ? null : label));
+  };
+
+  const toggleFilter = (label) => {
+    setSelectedFilters((prev) => ({
+      ...prev,
+      [label]: !prev[label],
+    }));
+  };
+
+  const toggleFilterValue = (label, value) => {
+    setSelectedFilterValues((prev) => ({
+      ...prev,
+      [label]: {
+        ...(prev[label] || {}),
+        [value]: !prev[label]?.[value],
+      },
+    }));
+  };
+
+  const resetFilters = () => {
+    setSelectedFilters({});
+    setSelectedFilterValues({});
+    setExpandedFilter(null);
+  };
 
   const getSeries = () => {
     if (chartType === "line")
@@ -332,29 +414,167 @@ const CostExplorer = () => {
             transition: "right 0.25s ease",
             zIndex: 10,
             pointerEvents: filterDrawerOpen ? "auto" : "none",
+            overflowY: "auto",
           }}
         >
-          <Stack direction="row" justifyContent="space-between" mb={2}>
+          {/* HEADER */}
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            mb={1}
+          >
             <Typography fontWeight={600}>Filters</Typography>
-            <Button size="small" onClick={() => setFilterDrawerOpen(false)}>
-              Close
-            </Button>
+
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Button
+                size="small"
+                variant="text"
+                onClick={resetFilters}
+                sx={{ fontSize: 12 }}
+              >
+                Reset All
+              </Button>
+
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={() => setFilterDrawerOpen(false)}
+              >
+                Close
+              </Button>
+            </Stack>
           </Stack>
 
-          <Typography variant="body2" sx={{ mb: 1 }}>
-            Customize cost explorer settings here.
-          </Typography>
+          <Box
+            sx={{ borderBottom: "1px solid", borderColor: "divider", mb: 1 }}
+          />
+          <Stack spacing={0}>
+            {FILTERS.map((label) => (
+              <Box key={label}>
+                {/* FILTER ROW */}
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  sx={{
+                    py: 0.75,
+                    px: 0.5,
+                    cursor: "pointer",
+                    borderBottom: "1px solid",
+                    borderColor: "divider",
+                    "&:hover": { bgcolor: "action.hover" },
+                  }}
+                  onClick={() => toggleExpand(label)}
+                >
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <input
+                      type="checkbox"
+                      checked={!!selectedFilters[label]}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        toggleFilter(label);
+                      }}
+                    />
+                    <Typography fontSize={13}>{label}</Typography>
+                  </Stack>
 
-          <Stack spacing={1}>
-            <Button variant="outlined" size="small">
-              Cost Allocation Tags
-            </Button>
-            <Button variant="outlined" size="small">
-              Linked Accounts
-            </Button>
-            <Button variant="outlined" size="small">
-              Charge Type
-            </Button>
+                  <Typography fontSize={11} color="text.secondary">
+                    Include Only
+                  </Typography>
+                </Stack>
+
+                {/* DROPDOWN */}
+                {expandedFilter === label && FILTER_VALUES[label] && (
+                  <Box sx={{ pl: 3, pr: 1, py: 1, bgcolor: "grey.50" }}>
+                    {/* INFO */}
+                    <Typography fontSize={11} color="text.secondary" mb={0.5}>
+                      No filters currently added.
+                    </Typography>
+
+                    {/* SEARCH */}
+                    <TextField
+                      size="small"
+                      placeholder="Search"
+                      fullWidth
+                      sx={{ mb: 1 }}
+                    />
+
+                    {/* COUNT */}
+                    <Typography fontSize={11} color="text.secondary" mb={0.5}>
+                      Showing {FILTER_VALUES[label].length} results
+                    </Typography>
+
+                    {/* SELECT ALL */}
+                    <Stack
+                      direction="row"
+                      alignItems="center"
+                      spacing={1}
+                      mb={0.5}
+                    >
+                      <Checkbox
+                        size="small"
+                        checked={FILTER_VALUES[label].every(
+                          (v) => selectedFilterValues[label]?.[v]
+                        )}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          setSelectedFilterValues((prev) => ({
+                            ...prev,
+                            [label]: Object.fromEntries(
+                              FILTER_VALUES[label].map((v) => [v, checked])
+                            ),
+                          }));
+                        }}
+                      />
+                      <Typography fontSize={12}>Select All</Typography>
+                    </Stack>
+
+                    {/* VALUES LIST */}
+                    <Box sx={{ maxHeight: 180, overflowY: "auto", mb: 1 }}>
+                      {FILTER_VALUES[label].map((value) => (
+                        <Stack
+                          key={value}
+                          direction="row"
+                          alignItems="center"
+                          spacing={1}
+                          sx={{ py: 0.25 }}
+                        >
+                          <Checkbox
+                            size="small"
+                            checked={!!selectedFilterValues[label]?.[value]}
+                            onChange={() => toggleFilterValue(label, value)}
+                          />
+                          <Typography fontSize={12}>{value}</Typography>
+                        </Stack>
+                      ))}
+                    </Box>
+
+                    {/* ACTION BUTTONS */}
+                    <Stack
+                      direction="row"
+                      justifyContent="flex-end"
+                      spacing={1}
+                    >
+                      <Button
+                        size="small"
+                        variant="text"
+                        onClick={() => setExpandedFilter(null)}
+                      >
+                        Close
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        onClick={() => setExpandedFilter(null)}
+                      >
+                        Apply
+                      </Button>
+                    </Stack>
+                  </Box>
+                )}
+              </Box>
+            ))}
           </Stack>
         </Box>
       </Paper>
