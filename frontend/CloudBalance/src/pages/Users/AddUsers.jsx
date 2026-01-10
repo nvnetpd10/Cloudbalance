@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, useOutletContext } from "react-router-dom";
 import api from "../../utils/axios"; // ✅ interceptor
 import useUserActions from "../../components/hooks/Users/useUserActions";
+import useOnBoarding from "../../components/hooks/OnBoarding/useOnBoarding";
 import {
   Box,
   Paper,
@@ -18,8 +19,12 @@ export default function AddUser() {
   const { addUser, updateUser } = useUserActions();
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [availableAccounts, setAvailableAccounts] = useState([]);
+  const [assignedAccounts, setAssignedAccounts] = useState([]);
+  const [draggedAccount, setDraggedAccount] = useState(null);
 
   const isEdit = Boolean(id);
+  const { users: accounts, lloading } = useOnBoarding();
 
   const [form, setForm] = useState({
     firstName: "",
@@ -56,6 +61,10 @@ export default function AddUser() {
         }
       });
   }, [isEdit, id, navigate]);
+
+  useEffect(() => {
+    setAvailableAccounts(accounts);
+  }, [accounts]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -140,6 +149,34 @@ export default function AddUser() {
       </Box>
     );
   }
+
+  const handleDragStart = (account) => {
+    setDraggedAccount(account);
+  };
+
+  const handleDropToAssigned = () => {
+    if (!draggedAccount) return;
+
+    setAvailableAccounts((prev) =>
+      prev.filter((a) => a.id !== draggedAccount.id)
+    );
+
+    setAssignedAccounts((prev) => [...prev, draggedAccount]);
+
+    setDraggedAccount(null);
+  };
+
+  const handleDropToAvailable = () => {
+    if (!draggedAccount) return;
+
+    setAssignedAccounts((prev) =>
+      prev.filter((a) => a.id !== draggedAccount.id)
+    );
+
+    setAvailableAccounts((prev) => [...prev, draggedAccount]);
+
+    setDraggedAccount(null);
+  };
 
   return (
     <Box
@@ -265,7 +302,7 @@ export default function AddUser() {
               border: "1px solid #dbe2f1",
             }}
           >
-            {/* LEFT BOX */}
+            {/* LEFT BOX – AVAILABLE ACCOUNTS */}
             <Box
               sx={{
                 flex: 1,
@@ -276,6 +313,8 @@ export default function AddUser() {
                 display: "flex",
                 flexDirection: "column",
               }}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={handleDropToAvailable}
             >
               <Box
                 sx={{
@@ -292,18 +331,54 @@ export default function AddUser() {
                 </Typography>
               </Box>
 
-              <Box
-                sx={{
-                  flex: 1,
-                  m: 2,
-                  border: "2px dashed #c7d2fe",
-                  borderRadius: "10px",
-                  backgroundColor: "#f8faff",
-                }}
-              />
+              <Box sx={{ flex: 1, m: 2, overflowY: "auto" }}>
+                {lloading ? (
+                  <Typography sx={{ p: 2 }}>Loading accounts...</Typography>
+                ) : availableAccounts.length === 0 ? (
+                  <Typography sx={{ p: 2, color: "#6b7280" }}>
+                    No accounts available
+                  </Typography>
+                ) : (
+                  availableAccounts.map((acc) => (
+                    <Box
+                      key={acc.id}
+                      draggable
+                      onDragStart={() => handleDragStart(acc)}
+                      sx={{
+                        p: 1.6,
+                        mb: 1,
+                        borderRadius: "8px",
+                        backgroundColor: "#ffffff",
+                        border: "1px solid #e0e7ff",
+                        cursor: "grab",
+                        "&:hover": { backgroundColor: "#eef2ff" },
+                      }}
+                    >
+                      <Typography fontSize={14}>
+                        <Box
+                          component="span"
+                          sx={{ fontWeight: 700, color: "#1976d2" }}
+                        >
+                          Account Name
+                        </Box>{" "}
+                        → {acc.accountName}
+                      </Typography>
+                      <Typography fontSize={13}>
+                        <Box
+                          component="span"
+                          sx={{ fontWeight: 700, color: "#1976d2" }}
+                        >
+                          Account ID
+                        </Box>{" "}
+                        → {acc.accountId}
+                      </Typography>
+                    </Box>
+                  ))
+                )}
+              </Box>
             </Box>
 
-            {/* ARROWS */}
+            {/* CENTER ARROWS (visual only) */}
             <Box
               sx={{
                 width: 64,
@@ -328,11 +403,7 @@ export default function AddUser() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    cursor: "pointer",
                     boxShadow: "0 6px 14px rgba(25,118,210,0.35)",
-                    "&:hover": {
-                      backgroundColor: "#155fa0",
-                    },
                   }}
                 >
                   {arrow}
@@ -340,7 +411,7 @@ export default function AddUser() {
               ))}
             </Box>
 
-            {/* RIGHT BOX */}
+            {/* RIGHT BOX – ASSIGNED ACCOUNTS */}
             <Box
               sx={{
                 flex: 1,
@@ -351,6 +422,8 @@ export default function AddUser() {
                 display: "flex",
                 flexDirection: "column",
               }}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={handleDropToAssigned}
             >
               <Box
                 sx={{
@@ -367,22 +440,48 @@ export default function AddUser() {
                 </Typography>
               </Box>
 
-              <Box
-                sx={{
-                  flex: 1,
-                  m: 2,
-                  borderRadius: "10px",
-                  border: "2px dashed #b7e1c3",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#6b7280",
-                  fontSize: 14,
-                  backgroundColor: "#f6fdf8",
-                  fontWeight: 500,
-                }}
-              >
-                No Account IDs Added
+              <Box sx={{ flex: 1, m: 2, overflowY: "auto" }}>
+                {assignedAccounts.length === 0 ? (
+                  <Typography sx={{ p: 2, color: "#6b7280" }}>
+                    Drop accounts here
+                  </Typography>
+                ) : (
+                  assignedAccounts.map((acc) => (
+                    <Box
+                      key={acc.id}
+                      draggable
+                      onDragStart={() => handleDragStart(acc)}
+                      sx={{
+                        p: 1.6,
+                        mb: 1,
+                        borderRadius: "8px",
+                        backgroundColor: "#ffffff",
+                        border: "1px solid #b7e1c3",
+                        cursor: "grab",
+                        "&:hover": { backgroundColor: "#e8f5e9" },
+                      }}
+                    >
+                      <Typography fontSize={14}>
+                        <Box
+                          component="span"
+                          sx={{ fontWeight: 700, color: "#2e7d32" }}
+                        >
+                          Account Name
+                        </Box>{" "}
+                        → {acc.accountName}
+                      </Typography>
+                      <Typography fontSize={13}>
+                        <Box
+                          component="span"
+                          sx={{ fontWeight: 700, color: "#2e7d32" }}
+                        >
+                          Account ID
+                        </Box>{" "}
+                        → {acc.accountId}
+                      </Typography>
+                    </Box>
+                  ))
+                )}
               </Box>
             </Box>
           </Box>

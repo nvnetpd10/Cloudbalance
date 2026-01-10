@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.DynamicUpdate;
 
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -50,6 +52,14 @@ public class UserEntity {
                 ", active=" + active +
                 '}';
     }
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "user_accounts",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "account_id")
+    )
+    private Set<OnboardedAccountEntity> accounts = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -115,6 +125,13 @@ public class UserEntity {
     }
 
 
+    public Set<OnboardedAccountEntity> getAccounts() {
+        return accounts;
+    }
+
+    public void setAccounts(Set<OnboardedAccountEntity> accounts) {
+        this.accounts = accounts;
+    }
 
 
 }
