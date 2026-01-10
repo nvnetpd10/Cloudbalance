@@ -19,6 +19,7 @@ export default function AddUser() {
   const { addUser, updateUser } = useUserActions();
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [allAccounts, setAllAccounts] = useState([]);
   const [availableAccounts, setAvailableAccounts] = useState([]);
   const [assignedAccounts, setAssignedAccounts] = useState([]);
   const [draggedAccount, setDraggedAccount] = useState(null);
@@ -39,32 +40,47 @@ export default function AddUser() {
     if (!isEdit) return;
 
     setLoading(true);
+
     api
       .get(`/users/${id}`)
       .then((res) => {
+        const user = res.data;
+
         setForm({
-          firstName: res.data.firstName || "",
-          lastName: res.data.lastName || "",
-          email: res.data.email || "",
-          role: res.data.role || "",
+          firstName: user.firstName || "",
+          lastName: user.lastName || "",
+          email: user.email || "",
+          role: user.role || "",
           password: "",
         });
+
+        // ✅ assigned accounts from response
+        const assigned = Array.isArray(user.accounts) ? user.accounts : [];
+
+        setAssignedAccounts(assigned);
+
         setLoading(false);
       })
-      .catch((err) => {
-        setLoading(false);
-        if (err.response?.status === 404) {
-          alert("User not found");
-          navigate("/dashboard/users");
-        } else {
-          alert("Failed to load user data");
-        }
-      });
-  }, [isEdit, id, navigate]);
+      .catch(() => setLoading(false));
+  }, [isEdit, id]);
 
   useEffect(() => {
-    setAvailableAccounts(accounts);
+    if (Array.isArray(accounts)) {
+      setAllAccounts(accounts);
+    }
   }, [accounts]);
+
+  useEffect(() => {
+    if (!Array.isArray(allAccounts)) return;
+
+    const assignedAccountIds = new Set(
+      assignedAccounts.map((a) => a.accountId)
+    );
+
+    setAvailableAccounts(
+      allAccounts.filter((acc) => !assignedAccountIds.has(acc.accountId))
+    );
+  }, [allAccounts, assignedAccounts]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -110,6 +126,8 @@ export default function AddUser() {
       email: form.email,
       role: form.role,
       active: true,
+      accountIds:
+        form.role === "Customer" ? assignedAccounts.map((a) => a.id) : [],
     };
 
     if (!isEdit) payload.password = form.password;
@@ -157,10 +175,6 @@ export default function AddUser() {
   const handleDropToAssigned = () => {
     if (!draggedAccount) return;
 
-    setAvailableAccounts((prev) =>
-      prev.filter((a) => a.id !== draggedAccount.id)
-    );
-
     setAssignedAccounts((prev) => [...prev, draggedAccount]);
 
     setDraggedAccount(null);
@@ -172,8 +186,6 @@ export default function AddUser() {
     setAssignedAccounts((prev) =>
       prev.filter((a) => a.id !== draggedAccount.id)
     );
-
-    setAvailableAccounts((prev) => [...prev, draggedAccount]);
 
     setDraggedAccount(null);
   };
@@ -334,7 +346,8 @@ export default function AddUser() {
               <Box sx={{ flex: 1, m: 2, overflowY: "auto" }}>
                 {lloading ? (
                   <Typography sx={{ p: 2 }}>Loading accounts...</Typography>
-                ) : availableAccounts.length === 0 ? (
+                ) : !Array.isArray(availableAccounts) ||
+                  availableAccounts.length === 0 ? (
                   <Typography sx={{ p: 2, color: "#6b7280" }}>
                     No accounts available
                   </Typography>
@@ -363,6 +376,7 @@ export default function AddUser() {
                         </Box>{" "}
                         → {acc.accountName}
                       </Typography>
+
                       <Typography fontSize={13}>
                         <Box
                           component="span"

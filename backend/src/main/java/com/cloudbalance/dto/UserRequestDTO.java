@@ -3,6 +3,8 @@ package com.cloudbalance.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
+import java.util.List;
+
 public class UserRequestDTO {
 
     @NotBlank(message = "First name is required")
@@ -19,6 +21,9 @@ public class UserRequestDTO {
     private String role;
 
     private String password;
+    private List<Long> accountIds;
+
+
 
     public UserRequestDTO() {}
 
@@ -60,5 +65,13 @@ public class UserRequestDTO {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public List<Long> getAccountIds() {
+        return accountIds;
+    }
+
+    public void setAccountIds(List<Long> accountIds) {
+        this.accountIds = accountIds;
     }
 }

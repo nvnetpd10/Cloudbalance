@@ -1,5 +1,6 @@
 package com.cloudbalance.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.HashSet;
@@ -26,6 +27,7 @@ public class OnboardedAccountEntity {
     private Instant createdAt = Instant.now();
 
     @ManyToMany(mappedBy = "accounts")
+    @JsonIgnore
     private Set<UserEntity> users = new HashSet<>();
 
 
