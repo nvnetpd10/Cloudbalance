@@ -51,6 +51,7 @@ public class SecurityConfig {
                         .requestMatchers("/users/**").authenticated()
                         .requestMatchers("/account/**").authenticated()
                         .requestMatchers("/onboarding/**").authenticated()
+                        .requestMatchers("/api/snowflake/**").authenticated()
                         .anyRequest().permitAll()
                 )
                 .addFilterBefore(
