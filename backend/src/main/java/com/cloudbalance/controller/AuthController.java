@@ -62,45 +62,6 @@ public class AuthController {
         return ResponseEntity.ok(authentication);
     }
 
-//    @PostMapping("/login")
-//    public ResponseEntity<?> login(
-//            @RequestBody LoginDto loginDto,
-//            HttpServletResponse response
-//    ) {
-//        try {
-//            Map<String, Object> data = authService.login(loginDto);
-//
-//            String refreshToken = (String) data.remove("refreshToken");
-//
-//            ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
-//                    .httpOnly(true)
-//                    .secure(false) // true in production (HTTPS)
-//                    .path("/auth/refresh")
-//                    .maxAge(7 * 24 * 60 * 60)
-//                    .sameSite("Lax")
-//                    .build();
-//
-//            response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-//
-//            return ResponseEntity.ok(data);
-//
-//        } catch (BadCredentialsException ex) {
-//            return ResponseEntity
-//                    .status(HttpStatus.UNAUTHORIZED)
-//                    .body(Map.of("message", "Invalid email or password"));
-//
-//        } catch (UsernameNotFoundException ex) {
-//            return ResponseEntity
-//                    .status(HttpStatus.UNAUTHORIZED)
-//                    .body(Map.of("message", "User not found"));
-//
-//        } catch (Exception ex) {
-//            ex.printStackTrace();
-//            return ResponseEntity
-//                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-//                    .body(Map.of("message", "Authentication failed"));
-//        }
-//    }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(

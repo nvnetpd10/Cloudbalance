@@ -74,32 +74,26 @@ public class UserServiceImpl implements UserService {
         UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        // 🔹 Email uniqueness check
         userRepository.findByEmail(dto.getEmail())
                 .filter(u -> !u.getId().equals(id))
                 .ifPresent(u -> {
                     throw new DataIntegrityViolationException("Email already exists");
                 });
 
-        // 🔹 Basic fields
         user.setFirstName(dto.getFirstName());
         user.setLastName(dto.getLastName());
         user.setEmail(dto.getEmail());
         user.setRole(dto.getRole());
 
-        // 🔹 Password: update ONLY if provided
         if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(dto.getPassword()));
         }
 
-        // 🔹 ACCOUNTS — FULL REPLACE LOGIC
         if ("Customer".equalsIgnoreCase(dto.getRole())) {
 
             if (dto.getAccountIds() != null) {
-                // ✅ remove all existing
                 user.getAccounts().clear();
 
-                // ✅ add whatever comes (0 / 1 / N)
                 if (!dto.getAccountIds().isEmpty()) {
                     var accounts =
                             onboardedAccountRepository.findAllById(dto.getAccountIds());
@@ -108,7 +102,6 @@ public class UserServiceImpl implements UserService {
             }
 
         } else {
-            // 🔹 Non-customer → no accounts
             user.getAccounts().clear();
         }
 
@@ -122,7 +115,6 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() ->
                         new UsernameNotFoundException("User not found"));
 
-        // ✅ FORCE LAZY LOADING (DO NOT REMOVE)
         user.getAccounts().size();
 
         return UserMapper.toResponseDTO(user);
