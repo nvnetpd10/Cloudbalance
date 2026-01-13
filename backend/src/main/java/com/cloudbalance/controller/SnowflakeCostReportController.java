@@ -1,9 +1,9 @@
 package com.cloudbalance.controller;
 
+import com.cloudbalance.dto.CostRequestDTO;
+import com.cloudbalance.dto.CostResponseDTO;
 import com.cloudbalance.service.impl.SnowflakeCostReportService;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -23,8 +23,19 @@ public class SnowflakeCostReportController {
         return service.getCostReport();
     }
 
-    @GetMapping("/api/snowflake/getCostReportGrouped")
-    public void getCostReportGrouped() {
-         service.getCostReportGrouped();
+//    @PostMapping("/api/snowflake/getCostReportGrouped")
+//    public List<CostResponseDTO> getGroupedReport(@RequestBody CostRequestDTO request) {
+//
+//        service.getCostReportGrouped(request);
+//        return null;
+//    }
+
+    @PostMapping("/api/snowflake/getCostReportGrouped")
+    public List<CostResponseDTO> getGroupedReport(@RequestBody CostRequestDTO request) {
+        // 1. Capture the list from the service
+        List<CostResponseDTO> reportData = service.getCostReportGrouped(request);
+
+        // 2. Return the list (Spring will convert this to JSON for React)
+        return reportData;
     }
 }

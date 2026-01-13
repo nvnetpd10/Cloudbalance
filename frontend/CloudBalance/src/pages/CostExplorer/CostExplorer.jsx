@@ -40,8 +40,8 @@ const CostExplorer = () => {
   const [tab, setTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
 
-  const [startDate, setStartDate] = useState(dayjs("2025-06-01"));
-  const [endDate, setEndDate] = useState(dayjs("2025-11-30"));
+  const [startDate, setStartDate] = useState(dayjs("2025-01-01"));
+  const [endDate, setEndDate] = useState(dayjs("2025-01-04"));
 
   const [interval, setInterval] = useState("monthly");
   const [chartType, setChartType] = useState("grouped");
@@ -57,54 +57,86 @@ const CostExplorer = () => {
   const [expandedFilter, setExpandedFilter] = useState(null);
   const [selectedFilterValues, setSelectedFilterValues] = useState({});
 
-  const [xAxisLabels, setXAxisLabels] = useState([]);
-  const [series, setSeries] = useState([]);
-
   const [rawData, setRawData] = useState([]); // This stores the list from Snowflake
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/snowflake/costreport")
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data, "data from cost exploer");
+    const loadData = async () => {
+      setLoading(true);
+
+      // 1. Get the token from wherever you store it (e.g., localStorage)
+      const token = localStorage.getItem("token"); // or sessionStorage.getItem("token")
+
+      const columns = [
+        "SERVICE",
+        "INSTANCE_TYPE",
+        "ACCOUNT_ID",
+        "USAGE_TYPE",
+        "PLATFORM",
+        "REGION",
+      ];
+      const requestPayload = {
+        startDate: startDate.format("YYYY-MM-DD"),
+        endDate: endDate.format("YYYY-MM-DD"),
+        groupByColumn: columns[tab],
+      };
+
+      try {
+        const response = await fetch(
+          "http://localhost:8080/api/snowflake/getCostReportGrouped",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              // 2. ADD THIS LINE TO FIX THE ERROR
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(requestPayload),
+          }
+        );
+
+        if (!response.ok) {
+          // If response is 403, it means the token is invalid or expired
+          throw new Error(`Server Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log(data, "dsasas");
 
         setRawData(data);
+      } catch (error) {
+        console.error("Fetch error:", error);
+      } finally {
         setLoading(false);
-      })
-      .catch((err) => {
-        console.error("API Error:", err);
-        setLoading(false);
-      });
-  }, []);
+      }
+    };
+
+    loadData();
+  }, [startDate, endDate, tab]);
 
   const { processedSeries, uniqueDates } = useMemo(() => {
-    if (!rawData.length) return { processedSeries: [], uniqueDates: [] };
+    if (!rawData || rawData.length === 0)
+      return { processedSeries: [], uniqueDates: [] };
 
-    const groupByMap = [
-      "SERVICE",
-      "INSTANCE_TYPE",
-      "ACCOUNT_ID",
-      "USAGE_TYPE",
-      "PLATFORM",
-      "REGION",
-    ];
-    const currentGroupBy = groupByMap[tab];
+    // 1. Normalize dates from the backend to "YYYY-MM-DD"
+    const dates = [
+      ...new Set(
+        rawData.map((item) => dayjs(item.billDate).format("YYYY-MM-DD"))
+      ),
+    ].sort();
 
-    // Get unique dates and sort them
-    const dates = [...new Set(rawData.map((item) => item.BILL_DATE))].sort();
-
-    // Get unique groups (e.g., EC2, S3, etc.)
-    const groups = [...new Set(rawData.map((item) => item[currentGroupBy]))];
+    // 2. Get unique groups (e.g., "Amazon EC2")
+    const groups = [...new Set(rawData.map((item) => item.groupKey))];
 
     const seriesData = groups.map((groupName) => {
-      const dataPoints = dates.map((date) => {
-        return rawData
-          .filter(
-            (item) =>
-              item[currentGroupBy] === groupName && item.BILL_DATE === date
-          )
-          .reduce((sum, item) => sum + (item.COST || 0), 0);
+      const dataPoints = dates.map((dateStr) => {
+        // Find the record where group matches AND date matches the normalized string
+        const record = rawData.find((item) => {
+          const itemDate = dayjs(item.billDate).format("YYYY-MM-DD");
+          return item.groupKey === groupName && itemDate === dateStr;
+        });
+
+        return record ? record.totalCost : 0;
       });
 
       return {
@@ -115,9 +147,10 @@ const CostExplorer = () => {
 
     return {
       processedSeries: seriesData,
+      // Format for X-axis display (e.g., "01 Jan")
       uniqueDates: dates.map((d) => dayjs(d).format("DD MMM")),
     };
-  }, [rawData, tab]);
+  }, [rawData]);
 
   // 3. Update ECharts Option
   const getSeries = () => {
@@ -210,7 +243,7 @@ const CostExplorer = () => {
 
   return (
     <>
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
+      {/* <LocalizationProvider dateAdapter={AdapterDayjs}>
         <Popper
           open={open}
           anchorEl={rangeRef.current}
@@ -236,6 +269,50 @@ const CostExplorer = () => {
                 onClick={() => setOpen(false)}
               >
                 Done
+              </Button>
+            </Stack>
+          </Paper>
+        </Popper>
+      </LocalizationProvider> */}
+
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <Popper
+          open={open}
+          anchorEl={rangeRef.current}
+          placement="bottom-start"
+        >
+          <Paper sx={{ p: 2, boxShadow: 3, border: "1px solid #ccc" }}>
+            <Stack direction="row" spacing={2}>
+              <Box>
+                <Typography variant="caption" fontWeight="bold">
+                  Start Date
+                </Typography>
+                <StaticDatePicker
+                  displayStaticWrapperAs="desktop"
+                  value={startDate}
+                  // Triggered when user clicks a day
+                  onChange={(newValue) => setStartDate(newValue)}
+                />
+              </Box>
+              <Box>
+                <Typography variant="caption" fontWeight="bold">
+                  End Date
+                </Typography>
+                <StaticDatePicker
+                  displayStaticWrapperAs="desktop"
+                  value={endDate}
+                  // Triggered when user clicks a day
+                  onChange={(newValue) => setEndDate(newValue)}
+                />
+              </Box>
+            </Stack>
+            <Stack direction="row" justifyContent="flex-end" mt={1}>
+              <Button
+                size="small"
+                variant="contained"
+                onClick={() => setOpen(false)}
+              >
+                Apply & Close
               </Button>
             </Stack>
           </Paper>
@@ -655,50 +732,24 @@ const CostExplorer = () => {
             </TableHead>
 
             <TableBody>
-              {/* If data is still loading, you could show a "Loading..." row here */}
-              {processedSeries.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={uniqueDates.length + 2} align="center">
-                    No data found
+              {processedSeries.map((group) => (
+                <TableRow key={group.name}>
+                  <TableCell sx={{ fontWeight: 600, color: "primary.main" }}>
+                    {group.name} {/* This is your 'groupKey' from Java */}
+                  </TableCell>
+
+                  {group.data.map((value, index) => (
+                    <TableCell key={index} align="right">
+                      {formatCurrency(value)}{" "}
+                      {/* value comes from 'totalCost' */}
+                    </TableCell>
+                  ))}
+
+                  <TableCell align="right" sx={{ fontWeight: 600 }}>
+                    {formatCurrency(group.data.reduce((a, b) => a + b, 0))}
                   </TableCell>
                 </TableRow>
-              ) : (
-                processedSeries.map((group) => (
-                  <TableRow key={group.name}>
-                    <TableCell
-                      sx={{
-                        fontWeight: 600,
-                        color: "primary.main",
-                        border: "1px solid",
-                        borderColor: "divider",
-                      }}
-                    >
-                      {group.name}
-                    </TableCell>
-
-                    {group.data.map((value, index) => (
-                      <TableCell
-                        key={index}
-                        align="right"
-                        sx={{ border: "1px solid", borderColor: "divider" }}
-                      >
-                        {formatCurrency(value)}
-                      </TableCell>
-                    ))}
-
-                    <TableCell
-                      align="right"
-                      sx={{
-                        fontWeight: 600,
-                        border: "1px solid",
-                        borderColor: "divider",
-                      }}
-                    >
-                      {formatCurrency(group.data.reduce((a, b) => a + b, 0))}
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
+              ))}
             </TableBody>
           </Table>
         </TableContainer>

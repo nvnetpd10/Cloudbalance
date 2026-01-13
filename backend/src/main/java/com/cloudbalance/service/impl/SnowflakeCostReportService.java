@@ -1,5 +1,7 @@
 package com.cloudbalance.service.impl;
 
+import com.cloudbalance.dto.CostRequestDTO;
+import com.cloudbalance.dto.CostResponseDTO;
 import com.cloudbalance.snowflake.SnowFlakeJDBC;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -23,37 +25,59 @@ public class SnowflakeCostReportService {
 
     }
 
-    public void getCostReportGrouped() {
+//    public void getCostReportGrouped(CostRequestDTO request) {
+//
+////        String groupByColumn = "SERVICE";
+////        String startDate = "2025-01-01";
+////        String endDate = "2025-01-04";
+//
+//        String sql =
+//                "SELECT BILL_DATE, " + request.getGroupByColumn() + " AS GROUP_KEY, " +
+//                        "       SUM(COST) AS TOTAL_COST " +
+//                        "FROM SNOWFLAKE_LEARNING_DB.AWS_CUR.COSTREPORT " +
+//                        "WHERE BILL_DATE >= ? AND BILL_DATE <= ? " +
+//                        "GROUP BY BILL_DATE, " + request.getGroupByColumn() + " " +
+//                        "ORDER BY BILL_DATE ASC, TOTAL_COST DESC";
+//
+//
+//        List<Map<String, Object>> rows = jdbc.queryForList(
+//                sql,
+//                java.sql.Date.valueOf(request.getStartDate()),
+//                java.sql.Date.valueOf(request.getEndDate())
+//        );
+//
+//        for (Map<String, Object> row : rows) {
+//            System.out.println(
+//                    row.get("BILL_DATE") + " | " +
+//                            row.get("GROUP_KEY") + " -> " +
+//                            row.get("TOTAL_COST")
+//            );
+//        }
+//
+//
+//
+//    }
 
-        String groupByColumn = "SERVICE";
-        String startDate = "2025-01-01";
-        String endDate = "2025-01-04";
+public List<CostResponseDTO> getCostReportGrouped(CostRequestDTO request) {
+    String column = request.getGroupByColumn().toUpperCase();
 
-        String sql =
-                "SELECT BILL_DATE, " + groupByColumn + " AS GROUP_KEY, " +
-                        "       SUM(COST) AS TOTAL_COST " +
-                        "FROM SNOWFLAKE_LEARNING_DB.AWS_CUR.COSTREPORT " +
-                        "WHERE BILL_DATE >= ? AND BILL_DATE <= ? " +
-                        "GROUP BY BILL_DATE, " + groupByColumn + " " +
-                        "ORDER BY BILL_DATE ASC, TOTAL_COST DESC";
+    String sql = "SELECT BILL_DATE, " + column + " AS GROUP_KEY, " +
+            "SUM(COST) AS TOTAL_COST " +
+            "FROM SNOWFLAKE_LEARNING_DB.AWS_CUR.COSTREPORT " +
+            "WHERE BILL_DATE >= ? AND BILL_DATE <= ? " +
+            "GROUP BY BILL_DATE, " + column + " " +
+            "ORDER BY BILL_DATE ASC";
 
-
-        List<Map<String, Object>> rows = jdbc.queryForList(
-                sql,
-                java.sql.Date.valueOf(startDate),
-                java.sql.Date.valueOf(endDate)
-        );
-
-        for (Map<String, Object> row : rows) {
-            System.out.println(
-                    row.get("BILL_DATE") + " | " +
-                            row.get("GROUP_KEY") + " -> " +
-                            row.get("TOTAL_COST")
-            );
-        }
-
-
-
-    }
-
+    // Use jdbc.query to map rows to your DTO
+    return jdbc.query(
+            sql,
+            (rs, rowNum) -> new CostResponseDTO(
+                    rs.getDate("BILL_DATE"),      // Maps to Date billDate
+                    rs.getString("GROUP_KEY"),    // Maps to String groupByColumn
+                    rs.getBigDecimal("TOTAL_COST") // Maps to BigDecimal totalCost
+            ),
+            java.sql.Date.valueOf(request.getStartDate()),
+            java.sql.Date.valueOf(request.getEndDate())
+    );
+}
 }

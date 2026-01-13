@@ -13,7 +13,7 @@ public class JwtUtils {
 
     private final String SECRET = "u0v2x5z8C/A?D(G+KbPeShVmYq3t6w9z";
 
-    private final long EXPIRATION = 1000L * 60; // 1 minute
+    private final long EXPIRATION = 1000L * 60*2; // 1 minute
     private Key getKey() {
         return Keys.hmacShaKeyFor(SECRET.getBytes());
     }
