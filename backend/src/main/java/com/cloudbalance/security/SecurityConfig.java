@@ -34,6 +34,35 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource;
 
 
+//    @Bean
+//    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
+//        System.out.println("inside security filter chain");
+//
+//        httpSecurity
+//                .cors(cors -> cors.configurationSource(corsConfigurationSource))
+//                .sessionManagement(session ->
+//                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//                )
+//                .csrf(csrf -> csrf.disable())
+//                .authorizeHttpRequests(auth -> auth
+//                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+//                        .requestMatchers("/diagnostic/**").permitAll()
+//                        .requestMatchers("/auth/**").permitAll()
+//                        .requestMatchers("/users/**").authenticated()
+//                        .requestMatchers("/account/**").authenticated()
+//                        .requestMatchers("/onboarding/**").authenticated()
+//                        .requestMatchers("/api/snowflake/**").authenticated()
+//                        .anyRequest().permitAll()
+//                )
+//                .addFilterBefore(
+//                        jwtAuthenticationFilter,
+//                        UsernamePasswordAuthenticationFilter.class
+//                );
+//
+//
+//        return httpSecurity.build();
+//    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         System.out.println("inside security filter chain");
@@ -48,17 +77,18 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/diagnostic/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
+                        // CHANGE THIS LINE FROM .authenticated() TO .permitAll()
+                        .requestMatchers("/api/snowflake/**").permitAll()
+
                         .requestMatchers("/users/**").authenticated()
                         .requestMatchers("/account/**").authenticated()
                         .requestMatchers("/onboarding/**").authenticated()
-                        .requestMatchers("/api/snowflake/**").authenticated()
                         .anyRequest().permitAll()
                 )
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
                 );
-
 
         return httpSecurity.build();
     }
