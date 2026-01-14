@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { FaEdit, FaSearch } from "react-icons/fa";
-import api from "../../utils/axios"; // ✅ USE INTERCEPTOR
+import api from "../../utils/axios"; 
 import { getRole } from "../../utils/auth";
 
 import {

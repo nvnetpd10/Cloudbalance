@@ -46,21 +46,20 @@ api.interceptors.response.use(
         login(null, newAccessToken);
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
-        return api(originalRequest); // ✅ retry succeeds
+        return api(originalRequest);
       } catch {
         refreshPromise = null;
         logout();
         window.location.href = "/login";
-        return Promise.resolve(); // 🔕 suppress error
+        return Promise.resolve();
       }
     }
 
-    // 🔕 suppress expected auth errors completely
     if (error.response?.status === 401 || error.response?.status === 403) {
       return Promise.resolve();
     }
 
-    return Promise.reject(error); // real errors only
+    return Promise.reject(error);
   }
 );
 

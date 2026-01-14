@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import {
   Box,
@@ -40,8 +40,8 @@ const CostExplorer = () => {
   const [tab, setTab] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
 
-  const [startDate, setStartDate] = useState(dayjs("2025-06-01"));
-  const [endDate, setEndDate] = useState(dayjs("2025-11-30"));
+  const [startDate, setStartDate] = useState(dayjs("2025-01-01"));
+  const [endDate, setEndDate] = useState(dayjs("2025-01-04"));
 
   const [interval, setInterval] = useState("monthly");
   const [chartType, setChartType] = useState("grouped");
@@ -57,6 +57,123 @@ const CostExplorer = () => {
   const [expandedFilter, setExpandedFilter] = useState(null);
   const [selectedFilterValues, setSelectedFilterValues] = useState({});
 
+  const [rawData, setRawData] = useState([]); // This stores the list from Snowflake
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+
+      // 1. Get the token from wherever you store it (e.g., localStorage)
+      const token = localStorage.getItem("token"); // or sessionStorage.getItem("token")
+
+      const columns = [
+        "SERVICE",
+        "INSTANCE_TYPE",
+        "ACCOUNT_ID",
+        "USAGE_TYPE",
+        "PLATFORM",
+        "REGION",
+      ];
+      const requestPayload = {
+        startDate: startDate.format("YYYY-MM-DD"),
+        endDate: endDate.format("YYYY-MM-DD"),
+        groupByColumn: columns[tab],
+      };
+
+      try {
+        const response = await fetch(
+          "http://localhost:8080/api/snowflake/getCostReportGrouped",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              // 2. ADD THIS LINE TO FIX THE ERROR
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(requestPayload),
+          }
+        );
+
+        if (!response.ok) {
+          // If response is 403, it means the token is invalid or expired
+          throw new Error(`Server Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log(data, "dsasas");
+
+        setRawData(data);
+      } catch (error) {
+        console.error("Fetch error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [startDate, endDate, tab]);
+
+  const { processedSeries, uniqueDates } = useMemo(() => {
+    if (!rawData || rawData.length === 0)
+      return { processedSeries: [], uniqueDates: [] };
+
+    // 1. Normalize dates from the backend to "YYYY-MM-DD"
+    const dates = [
+      ...new Set(
+        rawData.map((item) => dayjs(item.billDate).format("YYYY-MM-DD"))
+      ),
+    ].sort();
+
+    // 2. Get unique groups (e.g., "Amazon EC2")
+    const groups = [...new Set(rawData.map((item) => item.groupKey))];
+
+    const seriesData = groups.map((groupName) => {
+      const dataPoints = dates.map((dateStr) => {
+        // Find the record where group matches AND date matches the normalized string
+        const record = rawData.find((item) => {
+          const itemDate = dayjs(item.billDate).format("YYYY-MM-DD");
+          return item.groupKey === groupName && itemDate === dateStr;
+        });
+
+        return record ? record.totalCost : 0;
+      });
+
+      return {
+        name: groupName,
+        data: dataPoints,
+      };
+    });
+
+    return {
+      processedSeries: seriesData,
+      // Format for X-axis display (e.g., "01 Jan")
+      uniqueDates: dates.map((d) => dayjs(d).format("DD MMM")),
+    };
+  }, [rawData]);
+
+  // 3. Update ECharts Option
+  const getSeries = () => {
+    return processedSeries.map((s) => ({
+      ...s,
+      type: chartType === "line" ? "line" : "bar",
+      stack: chartType === "stacked" ? "total" : null,
+      smooth: true,
+    }));
+  };
+
+  const option = {
+    tooltip: { trigger: "axis" },
+    legend: { bottom: 0, type: "scroll" }, // scroll helps if there are many services
+    grid: { left: "3%", right: "3%", bottom: "18%", containLabel: true },
+    xAxis: {
+      type: "category",
+      data: uniqueDates,
+    },
+    yAxis: { type: "value", name: "Cost ($)" },
+    series: getSeries(),
+  };
+
   const activeBtnStyle = {
     bgcolor: "primary.main",
     color: "#fff",
@@ -67,24 +184,6 @@ const CostExplorer = () => {
     color: "primary.main",
     borderColor: "primary.main",
   };
-
-  const baseSeries = [
-    { name: "AWS Service", data: [36000, 40000, 35000, 37000, 33000, 31000] },
-    {
-      name: "Amazon Appstore",
-      data: [25000, 24000, 26000, 24000, 23500, 22000],
-    },
-    { name: "CK Discount", data: [5000, 6000, 4500, 5200, 4800, 5100] },
-  ];
-
-  const months = [
-    "Jun 2025",
-    "Jul 2025",
-    "Aug 2025",
-    "Sep 2025",
-    "Oct 2025",
-    "Nov 2025",
-  ];
 
   const FILTERS = [
     "Service",
@@ -109,31 +208,6 @@ const CostExplorer = () => {
     "Account ID": ["123456789012", "987654321098"],
     Region: ["us-east-1", "us-west-2", "ap-south-1"],
   };
-
-  // const toggleFilter = (name) => {
-  //   setSelectedFilters((prev) => ({
-  //     ...prev,
-  //     [name]: !prev[name],
-  //   }));
-  // };
-
-  // const resetFilters = () => {
-  //   setSelectedFilters({});
-  // };
-
-  // const toggleExpand = (filter) => {
-  //   setExpandedFilter((prev) => (prev === filter ? null : filter));
-  // };
-
-  // const toggleFilterValue = (filter, value) => {
-  //   setSelectedFilterValues((prev) => ({
-  //     ...prev,
-  //     [filter]: {
-  //       ...(prev[filter] || {}),
-  //       [value]: !prev[filter]?.[value],
-  //     },
-  //   }));
-  // };
 
   const toggleExpand = (label) => {
     setExpandedFilter((prev) => (prev === label ? null : label));
@@ -162,31 +236,6 @@ const CostExplorer = () => {
     setExpandedFilter(null);
   };
 
-  const getSeries = () => {
-    if (chartType === "line")
-      return baseSeries.map((s) => ({ ...s, type: "line", smooth: true }));
-    if (chartType === "stacked")
-      return baseSeries.map((s) => ({ ...s, type: "bar", stack: "total" }));
-    return baseSeries.map((s) => ({ ...s, type: "bar" }));
-  };
-
-  const option = {
-    tooltip: { trigger: "axis" },
-    legend: { bottom: 0 },
-    grid: { left: "3%", right: "3%", bottom: "18%", containLabel: true },
-    xAxis: {
-      type: "category",
-      data: months,
-    },
-    yAxis: { type: "value", name: "Cost ($)" },
-    series: getSeries(),
-  };
-
-  // Calculate totals for each service
-  const getRowTotal = (data) => {
-    return data.reduce((sum, value) => sum + value, 0);
-  };
-
   // Format currency
   const formatCurrency = (value) => {
     return `$${value.toLocaleString()}`;
@@ -194,7 +243,7 @@ const CostExplorer = () => {
 
   return (
     <>
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
+      {/* <LocalizationProvider dateAdapter={AdapterDayjs}>
         <Popper
           open={open}
           anchorEl={rangeRef.current}
@@ -220,6 +269,50 @@ const CostExplorer = () => {
                 onClick={() => setOpen(false)}
               >
                 Done
+              </Button>
+            </Stack>
+          </Paper>
+        </Popper>
+      </LocalizationProvider> */}
+
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <Popper
+          open={open}
+          anchorEl={rangeRef.current}
+          placement="bottom-start"
+        >
+          <Paper sx={{ p: 2, boxShadow: 3, border: "1px solid #ccc" }}>
+            <Stack direction="row" spacing={2}>
+              <Box>
+                <Typography variant="caption" fontWeight="bold">
+                  Start Date
+                </Typography>
+                <StaticDatePicker
+                  displayStaticWrapperAs="desktop"
+                  value={startDate}
+                  // Triggered when user clicks a day
+                  onChange={(newValue) => setStartDate(newValue)}
+                />
+              </Box>
+              <Box>
+                <Typography variant="caption" fontWeight="bold">
+                  End Date
+                </Typography>
+                <StaticDatePicker
+                  displayStaticWrapperAs="desktop"
+                  value={endDate}
+                  // Triggered when user clicks a day
+                  onChange={(newValue) => setEndDate(newValue)}
+                />
+              </Box>
+            </Stack>
+            <Stack direction="row" justifyContent="flex-end" mt={1}>
+              <Button
+                size="small"
+                variant="contained"
+                onClick={() => setOpen(false)}
+              >
+                Apply & Close
               </Button>
             </Stack>
           </Paper>
@@ -581,6 +674,7 @@ const CostExplorer = () => {
 
       {/* Data Table in separate Paper */}
       <Paper sx={{ p: 2, mt: 2 }}>
+        {/* Look for the TableContainer near the bottom of your return statement */}
         <TableContainer>
           <Table
             size="small"
@@ -595,11 +689,23 @@ const CostExplorer = () => {
                     borderColor: "divider",
                   }}
                 >
-                  Service
+                  {/* This label changes based on what the user clicked (Service, Region, etc) */}
+                  {
+                    [
+                      "Service",
+                      "Instance Type",
+                      "Account ID",
+                      "Usage Type",
+                      "Platform",
+                      "Region",
+                    ][tab]
+                  }
                 </TableCell>
-                {months.map((month) => (
+
+                {/* Render columns for every unique date returned by Snowflake */}
+                {uniqueDates.map((date) => (
                   <TableCell
-                    key={month}
+                    key={date}
                     align="right"
                     sx={{
                       fontWeight: 600,
@@ -608,9 +714,10 @@ const CostExplorer = () => {
                       borderColor: "divider",
                     }}
                   >
-                    {month}
+                    {date}
                   </TableCell>
                 ))}
+
                 <TableCell
                   align="right"
                   sx={{
@@ -623,86 +730,26 @@ const CostExplorer = () => {
                 </TableCell>
               </TableRow>
             </TableHead>
+
             <TableBody>
-              {baseSeries.map((service) => (
-                <TableRow key={service.name}>
-                  <TableCell
-                    sx={{
-                      fontWeight: 600,
-                      color: "primary.main",
-                      border: "1px solid",
-                      borderColor: "divider",
-                    }}
-                  >
-                    {service.name}
+              {processedSeries.map((group) => (
+                <TableRow key={group.name}>
+                  <TableCell sx={{ fontWeight: 600, color: "primary.main" }}>
+                    {group.name} {/* This is your 'groupKey' from Java */}
                   </TableCell>
-                  {service.data.map((value, index) => (
-                    <TableCell
-                      key={index}
-                      align="right"
-                      sx={{ border: "1px solid", borderColor: "divider" }}
-                    >
-                      {formatCurrency(value)}
+
+                  {group.data.map((value, index) => (
+                    <TableCell key={index} align="right">
+                      {formatCurrency(value)}{" "}
+                      {/* value comes from 'totalCost' */}
                     </TableCell>
                   ))}
-                  <TableCell
-                    align="right"
-                    sx={{
-                      fontWeight: 600,
-                      border: "1px solid",
-                      borderColor: "divider",
-                    }}
-                  >
-                    {formatCurrency(getRowTotal(service.data))}
+
+                  <TableCell align="right" sx={{ fontWeight: 600 }}>
+                    {formatCurrency(group.data.reduce((a, b) => a + b, 0))}
                   </TableCell>
                 </TableRow>
               ))}
-              {/* Total Row */}
-              <TableRow sx={{ bgcolor: "grey.100" }}>
-                <TableCell
-                  sx={{
-                    fontWeight: 600,
-                    border: "1px solid",
-                    borderColor: "divider",
-                  }}
-                >
-                  Total
-                </TableCell>
-                {months.map((month, monthIndex) => {
-                  const monthTotal = baseSeries.reduce(
-                    (sum, service) => sum + service.data[monthIndex],
-                    0
-                  );
-                  return (
-                    <TableCell
-                      key={month}
-                      align="right"
-                      sx={{
-                        fontWeight: 600,
-                        border: "1px solid",
-                        borderColor: "divider",
-                      }}
-                    >
-                      {formatCurrency(monthTotal)}
-                    </TableCell>
-                  );
-                })}
-                <TableCell
-                  align="right"
-                  sx={{
-                    fontWeight: 600,
-                    border: "1px solid",
-                    borderColor: "divider",
-                  }}
-                >
-                  {formatCurrency(
-                    baseSeries.reduce(
-                      (sum, service) => sum + getRowTotal(service.data),
-                      0
-                    )
-                  )}
-                </TableCell>
-              </TableRow>
             </TableBody>
           </Table>
         </TableContainer>

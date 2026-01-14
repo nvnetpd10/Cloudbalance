@@ -1,3 +1,78 @@
+//package com.cloudbalance.controller;
+//
+//import com.cloudbalance.dto.UserRequestDTO;
+//import com.cloudbalance.dto.UserResponseDTO;
+//import com.cloudbalance.service.UserService;
+//import jakarta.validation.Valid;
+//import lombok.RequiredArgsConstructor;
+//import org.springframework.security.access.prepost.PreAuthorize;
+//import org.springframework.web.bind.annotation.*;
+//
+//import java.util.List;
+//import java.util.Map;
+//
+//@RestController
+//@RequestMapping("/users")
+//@CrossOrigin(origins = "*")
+//@RequiredArgsConstructor
+//public class UserController {
+//
+//    private final UserService userService;
+//
+//    @GetMapping
+//    @PreAuthorize("hasAnyRole('ADMIN', 'READONLY')")
+//    public List<UserResponseDTO> getUsers() {
+//        return userService.getUsers();
+//    }
+//
+//    @GetMapping("/{id}")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'READONLY')")
+//    public UserResponseDTO getUserById(@PathVariable Long id) {
+//        return userService.getUserById(id);
+//    }
+//
+//    @PostMapping
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public UserResponseDTO addUser(
+//            @Valid @RequestBody UserRequestDTO userRequestDTO
+//    ) {
+//        return userService.addUser(userRequestDTO);
+//    }
+//
+//    @PutMapping("/{id}")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public UserResponseDTO updateUser(
+//            @PathVariable Long id,
+//            @Valid @RequestBody UserRequestDTO dto
+//    ) {
+//        return userService.updateUser(id, dto);
+//    }
+//
+//    @PatchMapping("/{id}")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public UserResponseDTO patchUser(
+//            @PathVariable Long id,
+//            @RequestBody UserRequestDTO dto
+//    ) {
+//        return userService.patchUser(id, dto);
+//    }
+//
+//    @PatchMapping("/{id}/active")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public UserResponseDTO updateUserActive(
+//            @PathVariable Long id,
+//            @RequestBody Map<String, Boolean> body
+//    ) {
+//        return userService.updateUserActiveStatus(id, body.get("active"));
+//    }
+//
+//    @DeleteMapping("/{id}")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public void deleteUser(@PathVariable Long id) {
+//        userService.deleteUser(id);
+//    }
+//}
+
 package com.cloudbalance.controller;
 
 import com.cloudbalance.dto.UserRequestDTO;
@@ -5,6 +80,8 @@ import com.cloudbalance.dto.UserResponseDTO;
 import com.cloudbalance.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,8 +89,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/users")
-@CrossOrigin(origins = "*")
+@RequestMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 public class UserController {
 
@@ -31,15 +107,14 @@ public class UserController {
         return userService.getUserById(id);
     }
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMIN')")
-    public UserResponseDTO addUser(
-            @Valid @RequestBody UserRequestDTO userRequestDTO
-    ) {
+    public UserResponseDTO addUser(@Valid @RequestBody UserRequestDTO userRequestDTO) {
         return userService.addUser(userRequestDTO);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
     public UserResponseDTO updateUser(
             @PathVariable Long id,
@@ -48,7 +123,7 @@ public class UserController {
         return userService.updateUser(id, dto);
     }
 
-    @PatchMapping("/{id}")
+    @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
     public UserResponseDTO patchUser(
             @PathVariable Long id,
@@ -57,16 +132,21 @@ public class UserController {
         return userService.patchUser(id, dto);
     }
 
-    @PatchMapping("/{id}/active")
+    @PatchMapping(value = "/{id}/active", consumes = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
     public UserResponseDTO updateUserActive(
             @PathVariable Long id,
             @RequestBody Map<String, Boolean> body
     ) {
-        return userService.updateUserActiveStatus(id, body.get("active"));
+        Boolean active = body.get("active");
+        if (active == null) {
+            throw new IllegalArgumentException("Field 'active' is required");
+        }
+        return userService.updateUserActiveStatus(id, active);
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);

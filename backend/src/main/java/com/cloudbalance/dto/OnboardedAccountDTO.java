@@ -1,5 +1,11 @@
 package com.cloudbalance.dto;
 
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class OnboardedAccountDTO {
 
     private Long id;
@@ -14,15 +20,6 @@ public class OnboardedAccountDTO {
         this.accountName = accountName;
     }
 
-    public Long getId() {
-        return id;
-    }
 
-    public String getAccountId() {
-        return accountId;
-    }
 
-    public String getAccountName() {
-        return accountName;
-    }
 }
