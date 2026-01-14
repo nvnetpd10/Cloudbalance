@@ -8,7 +8,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import api from "../../../utils/axios"; // ✅ ADD
+import api from "../../../utils/axios"; 
 
 const StepNumber = ({ number }) => (
   <Box
@@ -35,8 +35,8 @@ export default function CreateCostUsageReport() {
   const [copiedRole, setCopiedRole] = useState(false);
 
   const navigate = useNavigate();
-  const location = useLocation(); // ✅ ADD
-  const formData = location.state; // ✅ ADD
+  const location = useLocation(); 
+  const formData = location.state; 
 
   useEffect(() => {
     if (!formData) {

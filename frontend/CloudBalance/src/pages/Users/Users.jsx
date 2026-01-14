@@ -1,44 +1,47 @@
-import { useState, useEffect } from "react";
-import { FaEdit, FaSearch } from "react-icons/fa";
-import api from "../../utils/axios";
-import { getRole } from "../../utils/auth";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-import {
-  Button,
-  Paper,
-  Chip,
-  Switch,
-  Box,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-} from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import api from "../../utils/axios";
+import { getRole } from "../../utils/auth";
+
+import { Box } from "@mui/material";
+
 import DataTable from "../../components/common/DataTable";
 import Pagination from "../../components/common/DataPagination";
-import useUsers from "../../components/hooks/Users/useUsers";
 import FullScreenLoader from "../../components/common/FullScreenLoader";
+import useUsers from "../../components/hooks/Users/useUsers";
+
+import UsersHeader from "./components/UsersHeader.jsx";
+import ToggleUserDialog from "./components/ToggleUserDialog.jsx";
+import { buildUserColumns } from "./components/usersColumns.jsx";
 
 export default function Users() {
   const navigate = useNavigate();
   const { users, loading } = useUsers();
-  const activeCount = users.filter((u) => u.active).length;
-  const inactiveCount = users.filter((u) => u.active === false).length;
 
-  const [pagedUsers, setPagedUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [pagedUsers, setPagedUsers] = useState([]);
 
   const userRole = getRole()?.toUpperCase() || "";
   const isAdmin = userRole === "ADMIN";
 
-  const filteredUsers = users.filter((u) =>
-    `${u.firstName} ${u.lastName}`
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
+  const filteredUsers = useMemo(() => {
+    return users.filter((u) =>
+      `${u.firstName} ${u.lastName}`
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())
+    );
+  }, [users, searchTerm]);
+
+  const activeCount = useMemo(
+    () => users.filter((u) => u.active).length,
+    [users]
+  );
+  const inactiveCount = useMemo(
+    () => users.filter((u) => u.active === false).length,
+    [users]
   );
 
   const [toggleDialog, setToggleDialog] = useState({
@@ -47,95 +50,6 @@ export default function Users() {
     newState: null,
     userName: "",
   });
-
-  const formatDateTime = (iso) => {
-    if (!iso) return "--";
-    return new Date(iso).toLocaleString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: true,
-      timeZone: "Asia/Kolkata",
-    });
-  };
-
-  const columns = [
-    {
-      name: "First Name",
-      field: "firstName",
-      key: "firstName",
-      sortable: true,
-    },
-    { name: "Last Name", field: "lastName", key: "lastName", sortable: true },
-    { name: "Email", field: "email", key: "email", sortable: true },
-    {
-      name: "Role",
-      key: "role",
-      formatter: (row) => (
-        <Chip
-          label={row.role}
-          size="small"
-          style={{
-            borderRadius: "4px",
-            padding: "4px 6px",
-            backgroundColor: "#1976d2",
-            color: "#fff",
-            fontWeight: 600,
-            fontSize: "12px",
-          }}
-        />
-      ),
-    },
-    {
-      name: "Last Login",
-      field: "lastLogin",
-      key: "lastLogin",
-      sortable: true,
-      formatter: (row) => formatDateTime(row.lastLogin),
-    },
-  ];
-
-  if (isAdmin) {
-    columns.push(
-      {
-        name: "Active",
-        key: "active",
-        formatter: (row) => (
-          <Switch
-            checked={row.active}
-            onChange={() =>
-              handleActiveToggle(row.id, row.active, row.firstName)
-            }
-            color="primary"
-            size="small"
-          />
-        ),
-      },
-      {
-        name: "Edit",
-        key: "edit",
-        formatter: (row) => (
-          <FaEdit
-            size={18}
-            color="#1976d2"
-            style={{ cursor: "pointer" }}
-            onClick={() => navigate(`/dashboard/users/edit/${row.id}`)}
-          />
-        ),
-      }
-    );
-  }
-
-  useEffect(() => {
-    const initialized = filteredUsers.map((user) => ({
-      ...user,
-      active: user.active !== undefined ? user.active : true,
-    }));
-    setPagedUsers(initialized.slice(0, 10));
-  }, [searchTerm, users]);
 
   const handleActiveToggle = (userId, currentState, userName) => {
     setToggleDialog({
@@ -173,94 +87,40 @@ export default function Users() {
     });
   };
 
+  const handleCloseDialog = () => {
+    setToggleDialog((prev) => ({ ...prev, open: false }));
+  };
+
   const handlePageChange = (page, rowsPerPage) => {
     const start = page * rowsPerPage;
     const end = start + rowsPerPage;
     setPagedUsers(filteredUsers.slice(start, end));
   };
 
+  const columns = useMemo(() => {
+    return buildUserColumns({
+      isAdmin,
+      onToggleActive: handleActiveToggle,
+      onEdit: (id) => navigate(`/dashboard/users/edit/${id}`),
+    });
+  }, [isAdmin, navigate]);
+
   return (
     <>
       <ToastContainer position="top-right" autoClose={2000} />
 
-      <Paper
-        elevation={2}
-        style={{
-          padding: "14px 20px",
-          marginBottom: 16,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: "12px",
-        }}
-      >
-        <h3 style={{ margin: 0, color: "#1976d2" }}>USERS</h3>
-
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            border: "1px solid #ccc",
-            padding: "6px 10px",
-            borderRadius: "4px",
-            background: "#fff",
-            width: "940px",
-          }}
-        >
-          <FaSearch size={18} color="#1976d2" />
-          <input
-            type="text"
-            placeholder="Search user by name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ border: "none", outline: "none", fontSize: "14px" }}
-          />
-        </div>
-
-        {isAdmin && (
-          <Box
-            sx={{
-              display: "flex",
-              gap: "12px",
-              alignItems: "center",
-              background: "#f5f7fa",
-              border: "1px solid #ddd",
-              borderRadius: "6px",
-              padding: "6px 12px",
-              fontSize: "13px",
-              fontWeight: 600,
-            }}
-          >
-            <Chip
-              label={`Active: ${activeCount}`}
-              color="success"
-              size="small"
-            />
-            <Chip
-              label={`InActive: ${inactiveCount}`}
-              color="error"
-              size="small"
-            />
-          </Box>
-        )}
-
-        {isAdmin && (
-          <Button
-            variant="contained"
-            style={{
-              backgroundColor: "#1976d2",
-              textTransform: "none",
-              paddingLeft: 14,
-              paddingRight: 14,
-              fontSize: "0.8rem",
-            }}
-            onClick={() => navigate("/dashboard/users/add")}
-          >
-            Add New User
-          </Button>
-        )}
-      </Paper>
+      <UsersHeader
+        isAdmin={isAdmin}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        activeCount={activeCount}
+        inactiveCount={inactiveCount}
+        onAddUser={() => navigate("/dashboard/users/add")}
+        onInitPage={() => setPagedUsers(filteredUsers.slice(0, 10))}
+        users={users}
+        filteredUsers={filteredUsers}
+        setPagedUsers={setPagedUsers}
+      />
 
       <Box sx={{ position: "relative", minHeight: "400px" }}>
         {loading ? (
@@ -277,35 +137,13 @@ export default function Users() {
         )}
       </Box>
 
-      <Dialog
+      <ToggleUserDialog
         open={toggleDialog.open}
-        onClose={() => setToggleDialog({ ...toggleDialog, open: false })}
-      >
-        <DialogTitle>
-          {toggleDialog.newState ? "Activate User" : "Deactivate User"}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Are you sure you want to{" "}
-            <strong>{toggleDialog.newState ? "activate" : "deactivate"}</strong>{" "}
-            {toggleDialog.userName}?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setToggleDialog({ ...toggleDialog, open: false })}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleConfirmToggle}
-            variant="contained"
-            color={toggleDialog.newState ? "primary" : "error"}
-          >
-            Confirm
-          </Button>
-        </DialogActions>
-      </Dialog>
+        newState={toggleDialog.newState}
+        userName={toggleDialog.userName}
+        onClose={handleCloseDialog}
+        onConfirm={handleConfirmToggle}
+      />
     </>
   );
 }

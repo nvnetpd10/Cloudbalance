@@ -1,31 +1,26 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate, useOutletContext } from "react-router-dom";
-import api from "../../utils/axios"; // ✅ interceptor
-import useUserActions from "../../components/hooks/Users/useUserActions";
-import useOnBoarding from "../../components/hooks/OnBoarding/useOnBoarding";
+import { Box, Paper, Typography, Button } from "@mui/material";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-import {
-  Box,
-  Paper,
-  Typography,
-  TextField,
-  Button,
-  MenuItem,
-} from "@mui/material";
+import api from "../../utils/axios";
+import useUserActions from "../../components/hooks/Users/useUserActions";
+import useOnBoarding from "../../components/hooks/OnBoarding/useOnBoarding";
+
+import UserFormFields from "./components/UserFormFields";
+import CustomerAccountTransfer from "./components/CustomerAccountTransfer";
+import { validateUserForm } from "./components/validators";
+import useUserAccountsTransfer from "./components/useUserAccountsTransfer";
 
 export default function AddUser() {
   const { open } = useOutletContext();
   const { id } = useParams();
   const navigate = useNavigate();
   const { addUser, updateUser } = useUserActions();
+
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [allAccounts, setAllAccounts] = useState([]);
-  const [availableAccounts, setAvailableAccounts] = useState([]);
-  const [assignedAccounts, setAssignedAccounts] = useState([]);
-  const [draggedAccount, setDraggedAccount] = useState(null);
 
   const isEdit = Boolean(id);
   const { users: accounts, lloading } = useOnBoarding();
@@ -38,7 +33,15 @@ export default function AddUser() {
     password: "",
   });
 
-  // 🔹 LOAD USER (EDIT MODE)
+  const {
+    availableAccounts,
+    assignedAccounts,
+    setAssignedAccounts,
+    handleDragStart,
+    handleDropToAssigned,
+    handleDropToAvailable,
+  } = useUserAccountsTransfer(accounts);
+
   useEffect(() => {
     if (!isEdit) return;
 
@@ -57,78 +60,30 @@ export default function AddUser() {
           password: "",
         });
 
-        // ✅ assigned accounts from response
         const assigned = Array.isArray(user.accounts) ? user.accounts : [];
-
         setAssignedAccounts(assigned);
 
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [isEdit, id]);
-
-  useEffect(() => {
-    if (Array.isArray(accounts)) {
-      setAllAccounts(accounts);
-    }
-  }, [accounts]);
-
-  useEffect(() => {
-    if (!Array.isArray(allAccounts)) return;
-
-    const assignedAccountIds = new Set(
-      assignedAccounts.map((a) => a.accountId)
-    );
-
-    setAvailableAccounts(
-      allAccounts.filter((acc) => !assignedAccountIds.has(acc.accountId))
-    );
-  }, [allAccounts, assignedAccounts]);
+  }, [isEdit, id, setAssignedAccounts]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
-    if (errors[name]) {
-      setErrors({ ...errors, [name]: "" });
-    }
+    setForm((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  const isValidPassword = (password) => {
-    const regex =
-      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{5,}$/;
-    return regex.test(password);
-  };
-
-  // 🔹 SUBMIT
   const handleSubmit = async () => {
-    const newErrors = {};
-
-    if (!form.firstName.trim()) newErrors.firstName = "First name is required";
-    if (!form.lastName.trim()) newErrors.lastName = "Last name is required";
-    if (!form.email.trim()) newErrors.email = "Email is required";
-    if (!form.role.trim()) newErrors.role = "Role is required";
-
-    if (!isEdit) {
-      if (!form.password.trim()) {
-        newErrors.password = "Password is required";
-      } else if (!isValidPassword(form.password)) {
-        newErrors.password =
-          "Min 5 chars, 1 letter, 1 number & 1 special character required";
-      }
-    } else if (form.password.trim() && !isValidPassword(form.password)) {
-      newErrors.password =
-        "Min 5 chars, 1 letter, 1 number & 1 special character required";
-    }
-
-    // ✅ Customer role -> at least 1 account must be assigned
-    if (form.role === "Customer" && assignedAccounts.length === 0) {
-      newErrors.accounts = "Customer must have at least one account assigned";
-    }
+    const newErrors = validateUserForm({
+      form,
+      isEdit,
+      assignedAccounts,
+    });
 
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) {
-      // show 1st error message
       const firstKey = Object.keys(newErrors)[0];
       toast.error(newErrors[firstKey]);
       return;
@@ -147,22 +102,6 @@ export default function AddUser() {
     if (!isEdit) payload.password = form.password;
     else if (form.password.trim()) payload.password = form.password;
 
-    // try {
-    //   if (isEdit) {
-    //     await updateUser(id, payload);
-    //   } else {
-    //     await addUser(payload);
-    //   }
-    //   navigate("/dashboard/users");
-    // } catch (error) {
-    //   if (error.response?.status === 409) {
-    //     setErrors({ email: "User with this email already exists" });
-    //   } else if (error.response?.status === 400) {
-    //     setErrors({ general: "Invalid input. Please check all fields." });
-    //   } else {
-    //     setErrors({ general: "Failed to save user" });
-    //   }
-    // }
     try {
       if (isEdit) {
         await updateUser(id, payload);
@@ -203,28 +142,6 @@ export default function AddUser() {
     );
   }
 
-  const handleDragStart = (account) => {
-    setDraggedAccount(account);
-  };
-
-  const handleDropToAssigned = () => {
-    if (!draggedAccount) return;
-
-    setAssignedAccounts((prev) => [...prev, draggedAccount]);
-
-    setDraggedAccount(null);
-  };
-
-  const handleDropToAvailable = () => {
-    if (!draggedAccount) return;
-
-    setAssignedAccounts((prev) =>
-      prev.filter((a) => a.id !== draggedAccount.id)
-    );
-
-    setDraggedAccount(null);
-  };
-
   return (
     <Box
       sx={{
@@ -258,84 +175,13 @@ export default function AddUser() {
           </Typography>
         )}
 
-        <Box
-          component="form"
-          sx={{
-            width: "100%",
-            display: "grid",
-            gridTemplateColumns: "1fr 2.2fr",
-            gap: 3,
-          }}
-        >
-          <TextField
-            label="First Name"
-            name="firstName"
-            value={form.firstName}
-            onChange={handleChange}
-            required
-            error={!!errors.firstName}
-            helperText={errors.firstName}
-            fullWidth
-            sx={{ maxWidth: "380px" }}
-          />
+        <UserFormFields
+          form={form}
+          errors={errors}
+          isEdit={isEdit}
+          onChange={handleChange}
+        />
 
-          <TextField
-            label="Last Name"
-            name="lastName"
-            value={form.lastName}
-            onChange={handleChange}
-            required
-            error={!!errors.lastName}
-            helperText={errors.lastName}
-            fullWidth
-            sx={{ maxWidth: "380px" }}
-          />
-
-          <TextField
-            label="Email ID"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            required
-            error={!!errors.email}
-            helperText={errors.email}
-            fullWidth
-            sx={{ maxWidth: "380px" }}
-          />
-
-          <TextField
-            select
-            label="Select Role"
-            name="role"
-            value={form.role}
-            onChange={handleChange}
-            required
-            error={!!errors.role}
-            helperText={errors.role}
-            fullWidth
-            sx={{ maxWidth: "380px" }}
-          >
-            <MenuItem value="Admin">Admin</MenuItem>
-            <MenuItem value="ReadOnly">ReadOnly</MenuItem>
-            <MenuItem value="Customer">Customer</MenuItem>
-          </TextField>
-
-          <TextField
-            label="Password"
-            name="password"
-            type="password"
-            value={form.password}
-            onChange={handleChange}
-            required={!isEdit}
-            error={!!errors.password}
-            helperText={
-              errors.password ||
-              (isEdit ? "Leave blank to keep current password" : "")
-            }
-            fullWidth
-            sx={{ maxWidth: "380px" }}
-          />
-        </Box>
         {form.role === "Customer" && errors.accounts && (
           <Typography color="error" sx={{ mt: 2 }}>
             {errors.accounts}
@@ -343,204 +189,14 @@ export default function AddUser() {
         )}
 
         {form.role === "Customer" && (
-          <Box
-            sx={{
-              mt: 4,
-              mb: 3,
-              display: "flex",
-              gap: 3,
-              alignItems: "stretch",
-              background: "#f9fbff",
-              p: 3,
-              borderRadius: "14px",
-              border: "1px solid #dbe2f1",
-            }}
-          >
-            {/* LEFT BOX – AVAILABLE ACCOUNTS */}
-            <Box
-              sx={{
-                flex: 1,
-                minHeight: 320,
-                borderRadius: "14px",
-                border: "2px solid #1976d2",
-                backgroundColor: "#ffffff",
-                display: "flex",
-                flexDirection: "column",
-              }}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={handleDropToAvailable}
-            >
-              <Box
-                sx={{
-                  px: 2.5,
-                  py: 1.8,
-                  borderBottom: "1px solid #e3e8ef",
-                  backgroundColor: "#f1f6ff",
-                  borderTopLeftRadius: "14px",
-                  borderTopRightRadius: "14px",
-                }}
-              >
-                <Typography fontWeight={700} color="#1976d2">
-                  Choose Account IDs to Associate
-                </Typography>
-              </Box>
-
-              <Box sx={{ flex: 1, m: 2, overflowY: "auto" }}>
-                {lloading ? (
-                  <Typography sx={{ p: 2 }}>Loading accounts...</Typography>
-                ) : !Array.isArray(availableAccounts) ||
-                  availableAccounts.length === 0 ? (
-                  <Typography sx={{ p: 2, color: "#6b7280" }}>
-                    No accounts available
-                  </Typography>
-                ) : (
-                  availableAccounts.map((acc) => (
-                    <Box
-                      key={acc.id}
-                      draggable
-                      onDragStart={() => handleDragStart(acc)}
-                      sx={{
-                        p: 1.6,
-                        mb: 1,
-                        borderRadius: "8px",
-                        backgroundColor: "#ffffff",
-                        border: "1px solid #e0e7ff",
-                        cursor: "grab",
-                        "&:hover": { backgroundColor: "#eef2ff" },
-                      }}
-                    >
-                      <Typography fontSize={14}>
-                        <Box
-                          component="span"
-                          sx={{ fontWeight: 700, color: "#1976d2" }}
-                        >
-                          Account Name
-                        </Box>{" "}
-                        → {acc.accountName}
-                      </Typography>
-
-                      <Typography fontSize={13}>
-                        <Box
-                          component="span"
-                          sx={{ fontWeight: 700, color: "#1976d2" }}
-                        >
-                          Account ID
-                        </Box>{" "}
-                        → {acc.accountId}
-                      </Typography>
-                    </Box>
-                  ))
-                )}
-              </Box>
-            </Box>
-
-            {/* CENTER ARROWS (visual only) */}
-            <Box
-              sx={{
-                width: 64,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                gap: 2,
-              }}
-            >
-              {["→", "←"].map((arrow) => (
-                <Box
-                  key={arrow}
-                  sx={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: "50%",
-                    backgroundColor: "#1976d2",
-                    color: "#fff",
-                    fontSize: 20,
-                    fontWeight: 700,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    boxShadow: "0 6px 14px rgba(25,118,210,0.35)",
-                  }}
-                >
-                  {arrow}
-                </Box>
-              ))}
-            </Box>
-
-            {/* RIGHT BOX – ASSIGNED ACCOUNTS */}
-            <Box
-              sx={{
-                flex: 1,
-                minHeight: 320,
-                borderRadius: "14px",
-                border: "2px solid #43a047",
-                backgroundColor: "#ffffff",
-                display: "flex",
-                flexDirection: "column",
-              }}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={handleDropToAssigned}
-            >
-              <Box
-                sx={{
-                  px: 2.5,
-                  py: 1.8,
-                  borderBottom: "1px solid #e3e8ef",
-                  backgroundColor: "#f1fbf4",
-                  borderTopLeftRadius: "14px",
-                  borderTopRightRadius: "14px",
-                }}
-              >
-                <Typography fontWeight={700} color="#2e7d32">
-                  Associated Account IDs
-                </Typography>
-              </Box>
-
-              <Box sx={{ flex: 1, m: 2, overflowY: "auto" }}>
-                {assignedAccounts.length === 0 ? (
-                  <Typography sx={{ p: 2, color: "#6b7280" }}>
-                    Drop accounts here
-                  </Typography>
-                ) : (
-                  assignedAccounts.map((acc) => (
-                    <Box
-                      key={acc.id}
-                      draggable
-                      onDragStart={() => handleDragStart(acc)}
-                      sx={{
-                        p: 1.6,
-                        mb: 1,
-                        borderRadius: "8px",
-                        backgroundColor: "#ffffff",
-                        border: "1px solid #b7e1c3",
-                        cursor: "grab",
-                        "&:hover": { backgroundColor: "#e8f5e9" },
-                      }}
-                    >
-                      <Typography fontSize={14}>
-                        <Box
-                          component="span"
-                          sx={{ fontWeight: 700, color: "#2e7d32" }}
-                        >
-                          Account Name
-                        </Box>{" "}
-                        → {acc.accountName}
-                      </Typography>
-                      <Typography fontSize={13}>
-                        <Box
-                          component="span"
-                          sx={{ fontWeight: 700, color: "#2e7d32" }}
-                        >
-                          Account ID
-                        </Box>{" "}
-                        → {acc.accountId}
-                      </Typography>
-                    </Box>
-                  ))
-                )}
-              </Box>
-            </Box>
-          </Box>
+          <CustomerAccountTransfer
+            availableAccounts={availableAccounts}
+            assignedAccounts={assignedAccounts}
+            loadingAccounts={lloading}
+            onDragStart={handleDragStart}
+            onDropToAssigned={handleDropToAssigned}
+            onDropToAvailable={handleDropToAvailable}
+          />
         )}
 
         <Button

@@ -1,16 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  Paper,
-  Box,
-  Switch,
-  Chip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-  Button,
-} from "@mui/material";
+import { Paper, Box, Switch, Chip } from "@mui/material";
 
 import useAwsAGS from "../../../components/hooks/AWS/useAwsAGS";
 import DataTable from "../../../components/common/DataTable";

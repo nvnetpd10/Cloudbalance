@@ -12,7 +12,7 @@ export default function useOnBoarding() {
 
         setUsers(res?.data || []);
       } catch (e) {
-        console.error("❌ API ERROR:", e);
+        console.error(" API ERROR:", e);
       } finally {
         setLloading(false);
       }

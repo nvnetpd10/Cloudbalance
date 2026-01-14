@@ -81,25 +81,7 @@ export default function CreateIamRole() {
     setTimeout(() => setCopiedRole(false), 1500);
   };
 
-  // const validate = () => {
-  //   const errs = {};
-
-  //   if (!form.arn.startsWith("arn:aws:iam::")) {
-  //     errs.arn = "ARN must start with arn:aws:iam::";
-  //   }
-
-  //   if (!/^\d{12}$/.test(form.accountId)) {
-  //     errs.accountId = "Account ID must be exactly 12 digits";
-  //   }
-
-  //   if (!form.accountName.trim()) {
-  //     errs.accountName = "Account Name is required";
-  //   }
-
-  //   setErrors(errs);
-  //   return Object.keys(errs).length === 0;
-  // };
-
+  
   const validate = () => {
     const errs = {};
 

@@ -3,7 +3,7 @@ import { Box, TextField, Button, Paper, Avatar } from "@mui/material";
 import { login, isLoggedIn, getRole } from "../../utils/auth";
 import { useNavigate } from "react-router-dom";
 import Logo from "../../assets/images/CloudKeeper_Logo.jpg";
-import api from "../../utils/axios"; // ✅ use axios interceptor
+import api from "../../utils/axios"; 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -52,16 +52,11 @@ export default function Login() {
     if (emailErr || passwordErr) return;
 
     try {
-      // ✅ MUST use api (axios interceptor, cookies enabled)
       const response = await api.post("/auth/login", { email, password });
 
       const accessToken = response.data?.accessToken;
 
-      // if (!accessToken) {
-      //   alert("Login failed: access token missing");
-      //   return;
-      // }
-
+     
       if (!accessToken) {
         toast.error("Login failed: access token missing");
         return;
@@ -69,12 +64,10 @@ export default function Login() {
 
       toast.success("Login successful");
 
-      // ✅ store access token only (refresh is HttpOnly cookie)
       login(email, accessToken);
 
       const role = getRole();
 
-      // ✅ KEEP your routing logic
       if (role === "CUSTOMER") {
         navigate("/dashboard/cost-explorer");
       } else {
