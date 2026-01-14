@@ -21,48 +21,22 @@ import org.springframework.web.cors.CorsConfigurationSource;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    @Autowired
-    JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomUserDetailsService customUserDetailsService;
+    private final PasswordEncoder passwordEncoder;
+    private final CorsConfigurationSource corsConfigurationSource;
 
-    @Autowired
-    CustomUserDetailsService customUserDetailsService;
-
-    @Autowired
-    PasswordEncoder passwordEncoder;
-
-    @Autowired
-    CorsConfigurationSource corsConfigurationSource;
-
-
-//    @Bean
-//    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-//        System.out.println("inside security filter chain");
-//
-//        httpSecurity
-//                .cors(cors -> cors.configurationSource(corsConfigurationSource))
-//                .sessionManagement(session ->
-//                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-//                )
-//                .csrf(csrf -> csrf.disable())
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-//                        .requestMatchers("/diagnostic/**").permitAll()
-//                        .requestMatchers("/auth/**").permitAll()
-//                        .requestMatchers("/users/**").authenticated()
-//                        .requestMatchers("/account/**").authenticated()
-//                        .requestMatchers("/onboarding/**").authenticated()
-//                        .requestMatchers("/api/snowflake/**").authenticated()
-//                        .anyRequest().permitAll()
-//                )
-//                .addFilterBefore(
-//                        jwtAuthenticationFilter,
-//                        UsernamePasswordAuthenticationFilter.class
-//                );
-//
-//
-//        return httpSecurity.build();
-//    }
-
+    public SecurityConfig(
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            CustomUserDetailsService customUserDetailsService,
+            PasswordEncoder passwordEncoder,
+            CorsConfigurationSource corsConfigurationSource
+    ) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.customUserDetailsService = customUserDetailsService;
+        this.passwordEncoder = passwordEncoder;
+        this.corsConfigurationSource = corsConfigurationSource;
+    }
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         System.out.println("inside security filter chain");
@@ -78,7 +52,7 @@ public class SecurityConfig {
                         .requestMatchers("/diagnostic/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         // CHANGE THIS LINE FROM .authenticated() TO .permitAll()
-                        .requestMatchers("/api/snowflake/**").permitAll()
+                        .requestMatchers("/api/snowflake/**").authenticated()
 
                         .requestMatchers("/users/**").authenticated()
                         .requestMatchers("/account/**").authenticated()

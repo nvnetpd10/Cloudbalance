@@ -25,39 +25,6 @@ public class SnowflakeCostReportService {
 
     }
 
-//    public void getCostReportGrouped(CostRequestDTO request) {
-//
-////        String groupByColumn = "SERVICE";
-////        String startDate = "2025-01-01";
-////        String endDate = "2025-01-04";
-//
-//        String sql =
-//                "SELECT BILL_DATE, " + request.getGroupByColumn() + " AS GROUP_KEY, " +
-//                        "       SUM(COST) AS TOTAL_COST " +
-//                        "FROM SNOWFLAKE_LEARNING_DB.AWS_CUR.COSTREPORT " +
-//                        "WHERE BILL_DATE >= ? AND BILL_DATE <= ? " +
-//                        "GROUP BY BILL_DATE, " + request.getGroupByColumn() + " " +
-//                        "ORDER BY BILL_DATE ASC, TOTAL_COST DESC";
-//
-//
-//        List<Map<String, Object>> rows = jdbc.queryForList(
-//                sql,
-//                java.sql.Date.valueOf(request.getStartDate()),
-//                java.sql.Date.valueOf(request.getEndDate())
-//        );
-//
-//        for (Map<String, Object> row : rows) {
-//            System.out.println(
-//                    row.get("BILL_DATE") + " | " +
-//                            row.get("GROUP_KEY") + " -> " +
-//                            row.get("TOTAL_COST")
-//            );
-//        }
-//
-//
-//
-//    }
-
 public List<CostResponseDTO> getCostReportGrouped(CostRequestDTO request) {
     String column = request.getGroupByColumn().toUpperCase();
 
