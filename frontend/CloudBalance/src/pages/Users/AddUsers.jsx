@@ -117,6 +117,11 @@ export default function AddUser() {
         "Min 5 chars, 1 letter, 1 number & 1 special character required";
     }
 
+    // ✅ Customer role -> at least 1 account must be assigned
+    if (form.role === "Customer" && assignedAccounts.length === 0) {
+      newErrors.accounts = "Customer must have at least one account assigned";
+    }
+
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
@@ -299,6 +304,11 @@ export default function AddUser() {
             sx={{ maxWidth: "380px" }}
           />
         </Box>
+        {form.role === "Customer" && errors.accounts && (
+          <Typography color="error" sx={{ mt: 2 }}>
+            {errors.accounts}
+          </Typography>
+        )}
 
         {form.role === "Customer" && (
           <Box

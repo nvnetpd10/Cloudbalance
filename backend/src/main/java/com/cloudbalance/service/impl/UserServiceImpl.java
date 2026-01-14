@@ -215,6 +215,12 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setActive(true);
 
+        if ("Customer".equalsIgnoreCase(dto.getRole())) {
+            if (dto.getAccountIds() == null || dto.getAccountIds().isEmpty()) {
+                throw new IllegalArgumentException("Customer must have at least one account assigned");
+            }
+        }
+
         if ("Customer".equalsIgnoreCase(dto.getRole())
                 && dto.getAccountIds() != null
                 && !dto.getAccountIds().isEmpty()) {
@@ -245,6 +251,14 @@ public class UserServiceImpl implements UserService {
         user.setLastName(dto.getLastName());
         user.setEmail(dto.getEmail());
         user.setRole(dto.getRole());
+
+        // ✅ RULE: Customer must have at least 1 account
+        if ("Customer".equalsIgnoreCase(dto.getRole())) {
+            if (dto.getAccountIds() == null || dto.getAccountIds().isEmpty()) {
+                throw new IllegalArgumentException("Customer must have at least one account assigned");
+            }
+        }
+
 
         // Password update only if provided & not blank
         if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
