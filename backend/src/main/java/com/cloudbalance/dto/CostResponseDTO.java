@@ -14,6 +14,6 @@ import java.util.Date;
 @AllArgsConstructor
 public class CostResponseDTO {
     private Date billDate;
-    private String groupKey;   // Using 'groupKey' is more generic for Service/Region/etc.
+    private String groupKey;
     private BigDecimal totalCost;
 }

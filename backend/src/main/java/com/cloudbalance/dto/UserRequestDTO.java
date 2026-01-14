@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
+import jakarta.validation.constraints.Pattern;
+
 
 @Getter
 @Setter
@@ -23,6 +25,10 @@ public class UserRequestDTO {
     private String email;
 
     @NotBlank(message = "Role is required")
+    @Pattern(
+            regexp = "^(?i)(ADMIN|CUSTOMER|READONLY)$",
+            message = "Role must be ADMIN, CUSTOMER, or READONLY"
+    )
     private String role;
 
     private String password;

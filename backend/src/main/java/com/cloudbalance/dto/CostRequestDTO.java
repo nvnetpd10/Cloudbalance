@@ -9,7 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @Data
 public class CostRequestDTO {
-    private String startDate; // Expected format: "YYYY-MM-DD"
+    private String startDate;
     private String endDate;
-    private String groupByColumn; // e.g., "SERVICE", "REGION", "PLATFORM"
+    private String groupByColumn;
 }

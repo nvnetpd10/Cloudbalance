@@ -35,13 +35,12 @@ public List<CostResponseDTO> getCostReportGrouped(CostRequestDTO request) {
             "GROUP BY BILL_DATE, " + column + " " +
             "ORDER BY BILL_DATE ASC";
 
-    // Use jdbc.query to map rows to your DTO
     return jdbc.query(
             sql,
             (rs, rowNum) -> new CostResponseDTO(
-                    rs.getDate("BILL_DATE"),      // Maps to Date billDate
-                    rs.getString("GROUP_KEY"),    // Maps to String groupByColumn
-                    rs.getBigDecimal("TOTAL_COST") // Maps to BigDecimal totalCost
+                    rs.getDate("BILL_DATE"),
+                    rs.getString("GROUP_KEY"),
+                    rs.getBigDecimal("TOTAL_COST")
             ),
             java.sql.Date.valueOf(request.getStartDate()),
             java.sql.Date.valueOf(request.getEndDate())
