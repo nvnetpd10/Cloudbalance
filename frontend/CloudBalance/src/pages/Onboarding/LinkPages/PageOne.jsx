@@ -3,6 +3,8 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { IconButton, Tooltip } from "@mui/material";
 import pageOneImg from "../../../assets/images/pageone.png";
 import { useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 
 const StepNumber = ({ number }) => (
@@ -79,27 +81,53 @@ export default function CreateIamRole() {
     setTimeout(() => setCopiedRole(false), 1500);
   };
 
+  // const validate = () => {
+  //   const errs = {};
+
+  //   if (!form.arn.startsWith("arn:aws:iam::")) {
+  //     errs.arn = "ARN must start with arn:aws:iam::";
+  //   }
+
+  //   if (!/^\d{12}$/.test(form.accountId)) {
+  //     errs.accountId = "Account ID must be exactly 12 digits";
+  //   }
+
+  //   if (!form.accountName.trim()) {
+  //     errs.accountName = "Account Name is required";
+  //   }
+
+  //   setErrors(errs);
+  //   return Object.keys(errs).length === 0;
+  // };
+
   const validate = () => {
     const errs = {};
 
-    if (!form.arn.startsWith("arn:aws:iam::")) {
+    if (!form.arn.trim()) errs.arn = "ARN is required";
+    else if (!form.arn.startsWith("arn:aws:iam::"))
       errs.arn = "ARN must start with arn:aws:iam::";
-    }
 
-    if (!/^\d{12}$/.test(form.accountId)) {
+    if (!form.accountId.trim()) errs.accountId = "Account ID is required";
+    else if (!/^\d{12}$/.test(form.accountId))
       errs.accountId = "Account ID must be exactly 12 digits";
-    }
 
-    if (!form.accountName.trim()) {
-      errs.accountName = "Account Name is required";
-    }
+    if (!form.accountName.trim()) errs.accountName = "Account Name is required";
 
     setErrors(errs);
-    return Object.keys(errs).length === 0;
+
+    if (Object.keys(errs).length > 0) {
+      const firstKey = Object.keys(errs)[0];
+      toast.error(errs[firstKey]);
+      return false;
+    }
+
+    return true;
   };
 
   return (
     <>
+      <ToastContainer position="top-right" autoClose={2000} />
+
       <Box sx={{ mb: 2 }}>
         <Typography variant="h5" fontWeight={600} mt={1}>
           Create an IAM Role

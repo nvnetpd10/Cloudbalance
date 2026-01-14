@@ -23,6 +23,8 @@ export default function AppRoutes() {
       <Route path="/" element={<Login />} />
       <Route path="/login" element={<Login />} />
 
+      <Route path="/404" element={<NotFound />} />
+
       <Route
         path="/dashboard"
         element={

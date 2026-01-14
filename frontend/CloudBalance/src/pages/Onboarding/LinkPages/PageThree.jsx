@@ -4,7 +4,8 @@ import { IconButton, Tooltip } from "@mui/material";
 import pagethreeimgone from "../../../assets/images/pagethreeimgone.png";
 import pagethreeimgtwo from "../../../assets/images/pagethreeimgtwo.png";
 import pagethreeimgthree from "../../../assets/images/pagethreeimgthree.png";
-
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../../../utils/axios"; // ✅ ADD
@@ -57,6 +58,7 @@ export default function CreateCostUsageReport() {
 
   return (
     <>
+      <ToastContainer position="top-right" autoClose={2000} />
       <Box sx={{ mb: 2 }}>
         <Typography variant="h5" fontWeight={600} mt={1}>
           Create Cost & Usage Report{" "}
@@ -414,10 +416,18 @@ export default function CreateCostUsageReport() {
                   arn: formData.arn,
                 });
 
+                toast.success("Account saved successfully");
                 navigate("/dashboard/onboarding");
               } catch (err) {
-                console.error(err);
-                alert("Failed to save account");
+                const status = err?.response?.status;
+
+                if (status === 409) {
+                  toast.error("Account already exists");
+                } else {
+                  toast.error(
+                    err?.response?.data?.message || "Failed to save account"
+                  );
+                }
               }
             }}
             sx={{

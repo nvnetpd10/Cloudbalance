@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { FaEdit, FaSearch } from "react-icons/fa";
-import api from "../../utils/axios"; 
+import api from "../../utils/axios";
 import { getRole } from "../../utils/auth";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 import {
   Button,
@@ -146,14 +148,21 @@ export default function Users() {
 
   const handleConfirmToggle = async () => {
     const { userId, newState } = toggleDialog;
+
     try {
       await api.patch(`/users/${userId}/active`, { active: newState });
 
       setPagedUsers((prev) =>
         prev.map((u) => (u.id === userId ? { ...u, active: newState } : u))
       );
+
+      toast.success(
+        `User ${newState ? "activated" : "deactivated"} successfully`
+      );
     } catch (err) {
-      alert("Failed to update user status");
+      toast.error(
+        err.response?.data?.message || "Failed to update user status"
+      );
     }
 
     setToggleDialog({
@@ -172,6 +181,8 @@ export default function Users() {
 
   return (
     <>
+      <ToastContainer position="top-right" autoClose={2000} />
+
       <Paper
         elevation={2}
         style={{

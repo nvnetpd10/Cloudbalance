@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import ReactECharts from "echarts-for-react";
+import FullScreenLoader from "../../components/common/FullScreenLoader";
+
 import {
   Box,
   Paper,
@@ -337,423 +339,421 @@ const CostExplorer = () => {
         </Stack>
       </Box>
 
-      <Paper sx={{ p: 2, position: "relative", overflow: "hidden" }}>
-        <Box
-          sx={{
-            p: 1,
-            border: "1px solid",
-            borderColor: "divider",
-            borderRadius: "6px",
-            display: "flex",
-            gap: 1,
-            flexWrap: "wrap",
-            alignItems: "center",
-            mb: 2,
-          }}
-        >
-          <Typography fontWeight={600} sx={{ color: "grey" }}>
-            Group By:
-          </Typography>
+      <Box sx={{ position: "relative", minHeight: 600 }}>
+        {loading && <FullScreenLoader />}
 
-          {[
-            "Service",
-            "Instance Type",
-            "Account ID",
-            "Usage Type",
-            "Platform",
-            "Region",
-          ].map((label, index) => (
-            <Button
-              key={label}
-              size="small"
-              variant={tab === index ? "contained" : "outlined"}
-              sx={tab === index ? activeBtnStyle : inactiveBtnStyle}
-              onClick={() => setTab(index)}
-            >
-              {label}
-            </Button>
-          ))}
-
-          <Button
-            size="small"
-            variant="text"
-            onClick={handleMoreClick}
-            endIcon={
-              anchorEl ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />
-            }
+        <Paper sx={{ p: 2, position: "relative", overflow: "hidden" }}>
+          <Box
+            sx={{
+              p: 1,
+              border: "1px solid",
+              borderColor: "divider",
+              borderRadius: "6px",
+              display: "flex",
+              gap: 1,
+              flexWrap: "wrap",
+              alignItems: "center",
+              mb: 2,
+            }}
           >
-            More
-          </Button>
+            <Typography fontWeight={600} sx={{ color: "grey" }}>
+              Group By:
+            </Typography>
 
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleClose}
-          >
-            <MenuItem onClick={handleClose}>Usage Type Group</MenuItem>
-            <MenuItem onClick={handleClose}>Purchase Option</MenuItem>
-            <MenuItem onClick={handleClose}>Resource</MenuItem>
-            <MenuItem onClick={handleClose}>Charge Type</MenuItem>
-            <MenuItem onClick={handleClose}>Availability Zone</MenuItem>
-            <MenuItem onClick={handleClose}>Tenancy</MenuItem>
-            <MenuItem onClick={handleClose}>Legal Entity</MenuItem>
-            <MenuItem onClick={handleClose}>Billing Entity</MenuItem>
-          </Menu>
+            {[
+              "Service",
+              "Instance Type",
+              "Account ID",
+              "Usage Type",
+              "Platform",
+              "Region",
+            ].map((label, index) => (
+              <Button
+                key={label}
+                size="small"
+                variant={tab === index ? "contained" : "outlined"}
+                sx={tab === index ? activeBtnStyle : inactiveBtnStyle}
+                onClick={() => setTab(index)}
+              >
+                {label}
+              </Button>
+            ))}
 
-          {/* RIGHT ICON */}
-          <Box sx={{ ml: "auto" }}>
             <Button
               size="small"
-              variant="outlined"
-              sx={{ minWidth: 36, px: 1 }}
-              onClick={() => setFilterDrawerOpen(true)}
+              variant="text"
+              onClick={handleMoreClick}
+              endIcon={
+                anchorEl ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />
+              }
             >
-              <TuneIcon fontSize="small" />
+              More
             </Button>
+
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleClose}
+            >
+              <MenuItem onClick={handleClose}>Usage Type Group</MenuItem>
+              <MenuItem onClick={handleClose}>Purchase Option</MenuItem>
+              <MenuItem onClick={handleClose}>Resource</MenuItem>
+              <MenuItem onClick={handleClose}>Charge Type</MenuItem>
+              <MenuItem onClick={handleClose}>Availability Zone</MenuItem>
+              <MenuItem onClick={handleClose}>Tenancy</MenuItem>
+              <MenuItem onClick={handleClose}>Legal Entity</MenuItem>
+              <MenuItem onClick={handleClose}>Billing Entity</MenuItem>
+            </Menu>
+
+            {/* RIGHT ICON */}
+            <Box sx={{ ml: "auto" }}>
+              <Button
+                size="small"
+                variant="outlined"
+                sx={{ minWidth: 36, px: 1 }}
+                onClick={() => setFilterDrawerOpen(true)}
+              >
+                <TuneIcon fontSize="small" />
+              </Button>
+            </Box>
           </Box>
-        </Box>
 
-        <Stack
-          direction="row"
-          justifyContent="space-between"
-          alignItems="center"
-        >
-          <Typography variant="body2">Costs ($)</Typography>
-
-          <Stack direction="row" spacing={1} alignItems="center">
-            <TextField
-              ref={rangeRef}
-              size="small"
-              sx={{ width: 230, cursor: "pointer" }}
-              value={`${startDate.format("DD-MMM-YYYY")} – ${endDate.format(
-                "DD-MMM-YYYY"
-              )}`}
-              InputProps={{ readOnly: true }}
-              onClick={() => setOpen(true)}
-            />
-            <ToggleButtonGroup
-              size="small"
-              exclusive
-              value={interval}
-              onChange={(e, v) => v && setInterval(v)}
-              sx={{
-                "& .MuiToggleButton-root": {
-                  color: "primary.main",
-                  borderColor: "primary.main",
-                },
-                "& .MuiToggleButton-root.Mui-selected": {
-                  backgroundColor: "primary.main",
-                  color: "#fff",
-                  "&:hover": {
-                    backgroundColor: "primary.dark",
-                  },
-                },
-              }}
-            >
-              <ToggleButton value="daily">Daily</ToggleButton>
-              <ToggleButton value="monthly">Monthly</ToggleButton>
-            </ToggleButtonGroup>
-
-            <ToggleButtonGroup
-              size="small"
-              exclusive
-              value={chartType}
-              onChange={(e, v) => v && setChartType(v)}
-              sx={{
-                "& .MuiToggleButton-root": {
-                  color: "primary.main",
-                  borderColor: "primary.main",
-                },
-                "& .MuiToggleButton-root.Mui-selected": {
-                  backgroundColor: "primary.main",
-                  color: "#fff",
-                  "&:hover": {
-                    backgroundColor: "primary.dark",
-                  },
-                },
-              }}
-            >
-              <ToggleButton value="grouped">
-                <BarChartIcon fontSize="small" />
-              </ToggleButton>
-              <ToggleButton value="line">
-                <ShowChartIcon fontSize="small" />
-              </ToggleButton>
-              <ToggleButton value="stacked">
-                <StackedBarChartIcon fontSize="small" />
-              </ToggleButton>
-            </ToggleButtonGroup>
-          </Stack>
-        </Stack>
-
-        <Stack direction="row" justifyContent="flex-end" mt={1} mb={2}>
-          <Typography variant="body2">Include Negative Value</Typography>
-          <Switch size="small" />
-        </Stack>
-
-        <ReactECharts option={option} style={{ height: 420 }} />
-
-        <Box
-          sx={{
-            position: "absolute",
-            top: 0,
-            right: filterDrawerOpen ? 0 : "-100%",
-            width: 320,
-            height: "100%",
-            bgcolor: "background.paper",
-            borderLeft: "1px solid",
-            borderColor: "divider",
-            p: 2,
-            transition: "right 0.25s ease",
-            zIndex: 10,
-            pointerEvents: filterDrawerOpen ? "auto" : "none",
-            overflowY: "auto",
-          }}
-        >
-          {/* HEADER */}
           <Stack
             direction="row"
             justifyContent="space-between"
             alignItems="center"
-            mb={1}
           >
-            <Typography fontWeight={600}>Filters</Typography>
+            <Typography variant="body2">Costs ($)</Typography>
 
             <Stack direction="row" spacing={1} alignItems="center">
-              <Button
+              <TextField
+                ref={rangeRef}
                 size="small"
-                variant="text"
-                onClick={resetFilters}
-                sx={{ fontSize: 12 }}
-              >
-                Reset All
-              </Button>
+                sx={{ width: 230, cursor: "pointer" }}
+                value={`${startDate.format("DD-MMM-YYYY")} – ${endDate.format(
+                  "DD-MMM-YYYY"
+                )}`}
+                InputProps={{ readOnly: true }}
+                onClick={() => setOpen(true)}
+              />
 
-              <Button
+              <ToggleButtonGroup
                 size="small"
-                variant="outlined"
-                onClick={() => setFilterDrawerOpen(false)}
+                exclusive
+                value={interval}
+                onChange={(e, v) => v && setInterval(v)}
+                sx={{
+                  "& .MuiToggleButton-root": {
+                    color: "primary.main",
+                    borderColor: "primary.main",
+                  },
+                  "& .MuiToggleButton-root.Mui-selected": {
+                    backgroundColor: "primary.main",
+                    color: "#fff",
+                    "&:hover": { backgroundColor: "primary.dark" },
+                  },
+                }}
               >
-                Close
-              </Button>
+                <ToggleButton value="daily">Daily</ToggleButton>
+                <ToggleButton value="monthly">Monthly</ToggleButton>
+              </ToggleButtonGroup>
+
+              <ToggleButtonGroup
+                size="small"
+                exclusive
+                value={chartType}
+                onChange={(e, v) => v && setChartType(v)}
+                sx={{
+                  "& .MuiToggleButton-root": {
+                    color: "primary.main",
+                    borderColor: "primary.main",
+                  },
+                  "& .MuiToggleButton-root.Mui-selected": {
+                    backgroundColor: "primary.main",
+                    color: "#fff",
+                    "&:hover": { backgroundColor: "primary.dark" },
+                  },
+                }}
+              >
+                <ToggleButton value="grouped">
+                  <BarChartIcon fontSize="small" />
+                </ToggleButton>
+                <ToggleButton value="line">
+                  <ShowChartIcon fontSize="small" />
+                </ToggleButton>
+                <ToggleButton value="stacked">
+                  <StackedBarChartIcon fontSize="small" />
+                </ToggleButton>
+              </ToggleButtonGroup>
             </Stack>
           </Stack>
 
+          <Stack direction="row" justifyContent="flex-end" mt={1} mb={2}>
+            <Typography variant="body2">Include Negative Value</Typography>
+            <Switch size="small" />
+          </Stack>
+
+          <ReactECharts option={option} style={{ height: 420 }} />
+
           <Box
-            sx={{ borderBottom: "1px solid", borderColor: "divider", mb: 1 }}
-          />
-          <Stack spacing={0}>
-            {FILTERS.map((label) => (
-              <Box key={label}>
-                {/* FILTER ROW */}
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  justifyContent="space-between"
-                  sx={{
-                    py: 0.75,
-                    px: 0.5,
-                    cursor: "pointer",
-                    borderBottom: "1px solid",
-                    borderColor: "divider",
-                    "&:hover": { bgcolor: "action.hover" },
-                  }}
-                  onClick={() => toggleExpand(label)}
+            sx={{
+              position: "absolute",
+              top: 0,
+              right: filterDrawerOpen ? 0 : "-100%",
+              width: 320,
+              height: "100%",
+              bgcolor: "background.paper",
+              borderLeft: "1px solid",
+              borderColor: "divider",
+              p: 2,
+              transition: "right 0.25s ease",
+              zIndex: 10,
+              pointerEvents: filterDrawerOpen ? "auto" : "none",
+              overflowY: "auto",
+            }}
+          >
+            {/* HEADER */}
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+              mb={1}
+            >
+              <Typography fontWeight={600}>Filters</Typography>
+
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Button
+                  size="small"
+                  variant="text"
+                  onClick={resetFilters}
+                  sx={{ fontSize: 12 }}
                 >
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <input
-                      type="checkbox"
-                      checked={!!selectedFilters[label]}
-                      onChange={(e) => {
-                        e.stopPropagation();
-                        toggleFilter(label);
-                      }}
-                    />
-                    <Typography fontSize={13}>{label}</Typography>
-                  </Stack>
+                  Reset All
+                </Button>
 
-                  <Typography fontSize={11} color="text.secondary">
-                    Include Only
-                  </Typography>
-                </Stack>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => setFilterDrawerOpen(false)}
+                >
+                  Close
+                </Button>
+              </Stack>
+            </Stack>
 
-                {/* DROPDOWN */}
-                {expandedFilter === label && FILTER_VALUES[label] && (
-                  <Box sx={{ pl: 3, pr: 1, py: 1, bgcolor: "grey.50" }}>
-                    {/* INFO */}
-                    <Typography fontSize={11} color="text.secondary" mb={0.5}>
-                      No filters currently added.
-                    </Typography>
+            <Box
+              sx={{ borderBottom: "1px solid", borderColor: "divider", mb: 1 }}
+            />
 
-                    {/* SEARCH */}
-                    <TextField
-                      size="small"
-                      placeholder="Search"
-                      fullWidth
-                      sx={{ mb: 1 }}
-                    />
-
-                    {/* COUNT */}
-                    <Typography fontSize={11} color="text.secondary" mb={0.5}>
-                      Showing {FILTER_VALUES[label].length} results
-                    </Typography>
-
-                    {/* SELECT ALL */}
-                    <Stack
-                      direction="row"
-                      alignItems="center"
-                      spacing={1}
-                      mb={0.5}
-                    >
-                      <Checkbox
-                        size="small"
-                        checked={FILTER_VALUES[label].every(
-                          (v) => selectedFilterValues[label]?.[v]
-                        )}
+            <Stack spacing={0}>
+              {FILTERS.map((label) => (
+                <Box key={label}>
+                  {/* FILTER ROW */}
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    sx={{
+                      py: 0.75,
+                      px: 0.5,
+                      cursor: "pointer",
+                      borderBottom: "1px solid",
+                      borderColor: "divider",
+                      "&:hover": { bgcolor: "action.hover" },
+                    }}
+                    onClick={() => toggleExpand(label)}
+                  >
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <input
+                        type="checkbox"
+                        checked={!!selectedFilters[label]}
                         onChange={(e) => {
-                          const checked = e.target.checked;
-                          setSelectedFilterValues((prev) => ({
-                            ...prev,
-                            [label]: Object.fromEntries(
-                              FILTER_VALUES[label].map((v) => [v, checked])
-                            ),
-                          }));
+                          e.stopPropagation();
+                          toggleFilter(label);
                         }}
                       />
-                      <Typography fontSize={12}>Select All</Typography>
+                      <Typography fontSize={13}>{label}</Typography>
                     </Stack>
 
-                    {/* VALUES LIST */}
-                    <Box sx={{ maxHeight: 180, overflowY: "auto", mb: 1 }}>
-                      {FILTER_VALUES[label].map((value) => (
-                        <Stack
-                          key={value}
-                          direction="row"
-                          alignItems="center"
-                          spacing={1}
-                          sx={{ py: 0.25 }}
+                    <Typography fontSize={11} color="text.secondary">
+                      Include Only
+                    </Typography>
+                  </Stack>
+
+                  {/* DROPDOWN */}
+                  {expandedFilter === label && FILTER_VALUES[label] && (
+                    <Box sx={{ pl: 3, pr: 1, py: 1, bgcolor: "grey.50" }}>
+                      {/* INFO */}
+                      <Typography fontSize={11} color="text.secondary" mb={0.5}>
+                        No filters currently added.
+                      </Typography>
+
+                      {/* SEARCH */}
+                      <TextField
+                        size="small"
+                        placeholder="Search"
+                        fullWidth
+                        sx={{ mb: 1 }}
+                      />
+
+                      {/* COUNT */}
+                      <Typography fontSize={11} color="text.secondary" mb={0.5}>
+                        Showing {FILTER_VALUES[label].length} results
+                      </Typography>
+
+                      {/* SELECT ALL */}
+                      <Stack
+                        direction="row"
+                        alignItems="center"
+                        spacing={1}
+                        mb={0.5}
+                      >
+                        <Checkbox
+                          size="small"
+                          checked={FILTER_VALUES[label].every(
+                            (v) => selectedFilterValues[label]?.[v]
+                          )}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            setSelectedFilterValues((prev) => ({
+                              ...prev,
+                              [label]: Object.fromEntries(
+                                FILTER_VALUES[label].map((v) => [v, checked])
+                              ),
+                            }));
+                          }}
+                        />
+                        <Typography fontSize={12}>Select All</Typography>
+                      </Stack>
+
+                      {/* VALUES LIST */}
+                      <Box sx={{ maxHeight: 180, overflowY: "auto", mb: 1 }}>
+                        {FILTER_VALUES[label].map((value) => (
+                          <Stack
+                            key={value}
+                            direction="row"
+                            alignItems="center"
+                            spacing={1}
+                            sx={{ py: 0.25 }}
+                          >
+                            <Checkbox
+                              size="small"
+                              checked={!!selectedFilterValues[label]?.[value]}
+                              onChange={() => toggleFilterValue(label, value)}
+                            />
+                            <Typography fontSize={12}>{value}</Typography>
+                          </Stack>
+                        ))}
+                      </Box>
+
+                      {/* ACTION BUTTONS */}
+                      <Stack
+                        direction="row"
+                        justifyContent="flex-end"
+                        spacing={1}
+                      >
+                        <Button
+                          size="small"
+                          variant="text"
+                          onClick={() => setExpandedFilter(null)}
                         >
-                          <Checkbox
-                            size="small"
-                            checked={!!selectedFilterValues[label]?.[value]}
-                            onChange={() => toggleFilterValue(label, value)}
-                          />
-                          <Typography fontSize={12}>{value}</Typography>
-                        </Stack>
-                      ))}
+                          Close
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="contained"
+                          onClick={() => setExpandedFilter(null)}
+                        >
+                          Apply
+                        </Button>
+                      </Stack>
                     </Box>
+                  )}
+                </Box>
+              ))}
+            </Stack>
+          </Box>
+        </Paper>
 
-                    {/* ACTION BUTTONS */}
-                    <Stack
-                      direction="row"
-                      justifyContent="flex-end"
-                      spacing={1}
-                    >
-                      <Button
-                        size="small"
-                        variant="text"
-                        onClick={() => setExpandedFilter(null)}
-                      >
-                        Close
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="contained"
-                        onClick={() => setExpandedFilter(null)}
-                      >
-                        Apply
-                      </Button>
-                    </Stack>
-                  </Box>
-                )}
-              </Box>
-            ))}
-          </Stack>
-        </Box>
-      </Paper>
-
-      {/* Data Table in separate Paper */}
-      <Paper sx={{ p: 2, mt: 2 }}>
-        {/* Look for the TableContainer near the bottom of your return statement */}
-        <TableContainer>
-          <Table
-            size="small"
-            sx={{ border: "1px solid", borderColor: "divider" }}
-          >
-            <TableHead>
-              <TableRow sx={{ bgcolor: "grey.100" }}>
-                <TableCell
-                  sx={{
-                    fontWeight: 600,
-                    border: "1px solid",
-                    borderColor: "divider",
-                  }}
-                >
-                  {/* This label changes based on what the user clicked (Service, Region, etc) */}
-                  {
-                    [
-                      "Service",
-                      "Instance Type",
-                      "Account ID",
-                      "Usage Type",
-                      "Platform",
-                      "Region",
-                    ][tab]
-                  }
-                </TableCell>
-
-                {/* Render columns for every unique date returned by Snowflake */}
-                {uniqueDates.map((date) => (
+        {/* Data Table in separate Paper */}
+        <Paper sx={{ p: 2, mt: 2 }}>
+          <TableContainer>
+            <Table
+              size="small"
+              sx={{ border: "1px solid", borderColor: "divider" }}
+            >
+              <TableHead>
+                <TableRow sx={{ bgcolor: "grey.100" }}>
                   <TableCell
-                    key={date}
-                    align="right"
                     sx={{
                       fontWeight: 600,
-                      color: "primary.main",
                       border: "1px solid",
                       borderColor: "divider",
                     }}
                   >
-                    {date}
-                  </TableCell>
-                ))}
-
-                <TableCell
-                  align="right"
-                  sx={{
-                    fontWeight: 600,
-                    border: "1px solid",
-                    borderColor: "divider",
-                  }}
-                >
-                  Total
-                </TableCell>
-              </TableRow>
-            </TableHead>
-
-            <TableBody>
-              {processedSeries.map((group) => (
-                <TableRow key={group.name}>
-                  <TableCell sx={{ fontWeight: 600, color: "primary.main" }}>
-                    {group.name} {/* This is your 'groupKey' from Java */}
+                    {
+                      [
+                        "Service",
+                        "Instance Type",
+                        "Account ID",
+                        "Usage Type",
+                        "Platform",
+                        "Region",
+                      ][tab]
+                    }
                   </TableCell>
 
-                  {group.data.map((value, index) => (
-                    <TableCell key={index} align="right">
-                      {formatCurrency(value)}{" "}
-                      {/* value comes from 'totalCost' */}
+                  {uniqueDates.map((date) => (
+                    <TableCell
+                      key={date}
+                      align="right"
+                      sx={{
+                        fontWeight: 600,
+                        color: "primary.main",
+                        border: "1px solid",
+                        borderColor: "divider",
+                      }}
+                    >
+                      {date}
                     </TableCell>
                   ))}
 
-                  <TableCell align="right" sx={{ fontWeight: 600 }}>
-                    {formatCurrency(group.data.reduce((a, b) => a + b, 0))}
+                  <TableCell
+                    align="right"
+                    sx={{
+                      fontWeight: 600,
+                      border: "1px solid",
+                      borderColor: "divider",
+                    }}
+                  >
+                    Total
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
+              </TableHead>
+
+              <TableBody>
+                {processedSeries.map((group) => (
+                  <TableRow key={group.name}>
+                    <TableCell sx={{ fontWeight: 600, color: "primary.main" }}>
+                      {group.name}
+                    </TableCell>
+
+                    {group.data.map((value, index) => (
+                      <TableCell key={index} align="right">
+                        {formatCurrency(value)}
+                      </TableCell>
+                    ))}
+
+                    <TableCell align="right" sx={{ fontWeight: 600 }}>
+                      {formatCurrency(group.data.reduce((a, b) => a + b, 0))}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+      </Box>
     </>
   );
 };

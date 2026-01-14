@@ -4,6 +4,8 @@ import { login, isLoggedIn, getRole } from "../../utils/auth";
 import { useNavigate } from "react-router-dom";
 import Logo from "../../assets/images/CloudKeeper_Logo.jpg";
 import api from "../../utils/axios"; // ✅ use axios interceptor
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -55,10 +57,17 @@ export default function Login() {
 
       const accessToken = response.data?.accessToken;
 
+      // if (!accessToken) {
+      //   alert("Login failed: access token missing");
+      //   return;
+      // }
+
       if (!accessToken) {
-        alert("Login failed: access token missing");
+        toast.error("Login failed: access token missing");
         return;
       }
+
+      toast.success("Login successful");
 
       // ✅ store access token only (refresh is HttpOnly cookie)
       login(email, accessToken);
@@ -72,7 +81,7 @@ export default function Login() {
         navigate("/dashboard/users");
       }
     } catch (err) {
-      alert(err.response?.data?.message || "Login failed");
+      toast.error(err.response?.data?.message || "Invalid Credentials");
     }
   };
 
@@ -91,6 +100,8 @@ export default function Login() {
         overflow: "hidden",
       }}
     >
+      <ToastContainer position="top-right" autoClose={2000} />
+
       <Paper
         elevation={6}
         sx={{

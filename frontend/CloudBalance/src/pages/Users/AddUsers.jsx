@@ -3,6 +3,9 @@ import { useParams, useNavigate, useOutletContext } from "react-router-dom";
 import api from "../../utils/axios"; // ✅ interceptor
 import useUserActions from "../../components/hooks/Users/useUserActions";
 import useOnBoarding from "../../components/hooks/OnBoarding/useOnBoarding";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import {
   Box,
   Paper,
@@ -123,7 +126,13 @@ export default function AddUser() {
     }
 
     setErrors(newErrors);
-    if (Object.keys(newErrors).length > 0) return;
+
+    if (Object.keys(newErrors).length > 0) {
+      // show 1st error message
+      const firstKey = Object.keys(newErrors)[0];
+      toast.error(newErrors[firstKey]);
+      return;
+    }
 
     const payload = {
       firstName: form.firstName,
@@ -138,20 +147,41 @@ export default function AddUser() {
     if (!isEdit) payload.password = form.password;
     else if (form.password.trim()) payload.password = form.password;
 
+    // try {
+    //   if (isEdit) {
+    //     await updateUser(id, payload);
+    //   } else {
+    //     await addUser(payload);
+    //   }
+    //   navigate("/dashboard/users");
+    // } catch (error) {
+    //   if (error.response?.status === 409) {
+    //     setErrors({ email: "User with this email already exists" });
+    //   } else if (error.response?.status === 400) {
+    //     setErrors({ general: "Invalid input. Please check all fields." });
+    //   } else {
+    //     setErrors({ general: "Failed to save user" });
+    //   }
+    // }
     try {
       if (isEdit) {
         await updateUser(id, payload);
+        toast.success("User updated successfully");
       } else {
         await addUser(payload);
+        toast.success("User created successfully");
       }
       navigate("/dashboard/users");
     } catch (error) {
       if (error.response?.status === 409) {
         setErrors({ email: "User with this email already exists" });
+        toast.error("User with this email already exists");
       } else if (error.response?.status === 400) {
         setErrors({ general: "Invalid input. Please check all fields." });
+        toast.error("Invalid input. Please check all fields.");
       } else {
         setErrors({ general: "Failed to save user" });
+        toast.error("Failed to save user");
       }
     }
   };
@@ -205,6 +235,8 @@ export default function AddUser() {
         overflowX: "hidden",
       }}
     >
+      <ToastContainer position="top-right" autoClose={2000} />
+
       <Paper
         elevation={3}
         sx={{
