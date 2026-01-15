@@ -27,3 +27,22 @@ export const hasSession = () => {
   return !!localStorage.getItem("token");
 };
 
+export const getEmail = () => {
+  try {
+    return (JSON.parse(localStorage.getItem("user") || "{}")?.email || "").toLowerCase();
+  } catch {
+    return "";
+  }
+};
+
+
+export const getEmailFromToken = () => {
+  const token = getToken();
+  if (!token) return "";
+
+  const payload = decodeToken(token) || {};
+  // common keys: email / sub / username
+  return String(payload.email || payload.sub || payload.username || "")
+    .toLowerCase()
+    .trim();
+};

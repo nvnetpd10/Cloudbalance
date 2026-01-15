@@ -15,7 +15,12 @@ const formatDateTime = (iso) => {
   });
 };
 
-export const buildUserColumns = ({ isAdmin, onToggleActive, onEdit }) => {
+export const buildUserColumns = ({
+  isAdmin,
+  myEmail,
+  onToggleActive,
+  onEdit,
+}) => {
   const columns = [
     {
       name: "First Name",
@@ -52,31 +57,86 @@ export const buildUserColumns = ({ isAdmin, onToggleActive, onEdit }) => {
     },
   ];
 
+  // if (isAdmin) {
+  //   columns.push(
+  //     {
+  //       name: "Active",
+  //       key: "active",
+  //       formatter: (row) => (
+  //         <Switch
+  //           checked={row.active}
+  //           onChange={() => onToggleActive(row.id, row.active, row.firstName)}
+  //           color="primary"
+  //           size="small"
+  //         />
+  //       ),
+  //     },
+  //     {
+  //       name: "Edit",
+  //       key: "edit",
+  //       formatter: (row) => (
+  //         <FaEdit
+  //           size={18}
+  //           color="#1976d2"
+  //           style={{ cursor: "pointer" }}
+  //           onClick={() => onEdit(row.id)}
+  //         />
+  //       ),
+  //     }
+  //   );
+  // }
+
   if (isAdmin) {
     columns.push(
       {
         name: "Active",
         key: "active",
-        formatter: (row) => (
-          <Switch
-            checked={row.active}
-            onChange={() => onToggleActive(row.id, row.active, row.firstName)}
-            color="primary"
-            size="small"
-          />
-        ),
+        formatter: (row) => {
+          const isSelf =
+            String(row.email || "")
+              .toLowerCase()
+              .trim() ===
+            String(myEmail || "")
+              .toLowerCase()
+              .trim();
+
+          return (
+            <Switch
+              checked={row.active}
+              disabled={isSelf} // ✅ disable for self
+              onChange={() =>
+                onToggleActive(row.id, row.active, row.firstName, row.email)
+              } // ✅ pass email
+              color="primary"
+              size="small"
+            />
+          );
+        },
       },
       {
         name: "Edit",
         key: "edit",
-        formatter: (row) => (
-          <FaEdit
-            size={18}
-            color="#1976d2"
-            style={{ cursor: "pointer" }}
-            onClick={() => onEdit(row.id)}
-          />
-        ),
+        formatter: (row) => {
+          const isSelf =
+            String(row.email || "")
+              .toLowerCase()
+              .trim() ===
+            String(myEmail || "")
+              .toLowerCase()
+              .trim();
+
+          return (
+            <FaEdit
+              size={18}
+              color={isSelf ? "#9e9e9e" : "#1976d2"}
+              style={{
+                cursor: isSelf ? "not-allowed" : "pointer",
+                opacity: isSelf ? 0.5 : 1,
+              }}
+              onClick={() => onEdit(row.id, row.email)} // ✅ pass email
+            />
+          );
+        },
       }
     );
   }

@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
 import { Button, Paper, Chip, Box } from "@mui/material";
+import { useSelector } from "react-redux";
 
 export default function UsersHeader({
-  isAdmin,
   searchTerm,
   onSearchChange,
   activeCount,
@@ -20,6 +20,9 @@ export default function UsersHeader({
     }));
     setPagedUsers(initialized.slice(0, 10));
   }, [searchTerm, users]);
+
+  const roles = useSelector((state) => state.auth.roles);
+  const isAdmin = roles.includes("ROLE_ADMIN");
 
   return (
     <Paper
