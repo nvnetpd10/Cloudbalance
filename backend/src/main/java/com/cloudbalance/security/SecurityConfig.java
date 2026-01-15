@@ -54,8 +54,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/diagnostic/**").permitAll()
-                        .requestMatchers("/auth/**").permitAll()
-                        // CHANGE THIS LINE FROM .authenticated() TO .permitAll()
+                        .requestMatchers("/auth/login", "/auth/refresh", "/auth/logout").permitAll()
+                        .requestMatchers("/auth/authCheck").authenticated()
                         .requestMatchers("/api/snowflake/**").authenticated()
 
                         .requestMatchers("/users/**").authenticated()

@@ -7,13 +7,12 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -26,12 +25,20 @@ public class AuthController {
     private final AuthService authService;
 
     @GetMapping("/authCheck")
-    public ResponseEntity<?> authCheck(org.springframework.security.core.Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(401).body(Map.of("message", "User not authenticated"));
+    public ResponseEntity<List<String>> authCheck(Authentication authentication) {
+
+        if (authentication == null || !authentication.isAuthenticated()
+                || authentication instanceof org.springframework.security.authentication.AnonymousAuthenticationToken) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(java.util.List.of());
         }
-        return ResponseEntity.ok(authentication);
+
+        List<String> roles = authentication.getAuthorities().stream()
+                .map(a -> a.getAuthority())
+                .collect(java.util.stream.Collectors.toList());
+
+        return ResponseEntity.ok(roles);
     }
+
 
     @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> login(@RequestBody LoginDto loginDto, HttpServletResponse response) {

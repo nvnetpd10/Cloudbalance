@@ -34,8 +34,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        return path.startsWith("/diagnostic") || path.startsWith("/auth/");
+        return path.startsWith("/diagnostic")
+                || path.equals("/auth/login")
+                || path.equals("/auth/refresh")
+                || path.equals("/auth/logout");
     }
+
 
     private void unauthorized(HttpServletResponse response, String msg) throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
